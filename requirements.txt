@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+flask-login
+flask-bootstrap
+flask-wtf
+python-dotenv
+werkzeug>=3.0.0
+wtforms
+importlib_metadata
+python-dotenv
+email_validator

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h4 class="text-center">Create Savings Goal</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", placeholder="e.g., Vacation Fund, New Car") }}
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.target_amount.label(class="form-label") }}
+                            {{ form.target_amount(class="form-control", placeholder="0.00") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.current_amount.label(class="form-label") }}
+                            {{ form.current_amount(class="form-control", placeholder="0.00") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.target_date.label(class="form-label") }}
+                        {{ form.target_date(class="form-control") }}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Create Goal</button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>All Transactions</h2>
+    <a href="/add_transaction" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Add Transaction
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5>Transaction History</h5>
+        <div class="d-flex align-items-center">
+            <!-- Month/Year Filter -->
+            <form method="GET" action="{{ url_for('transactions') }}" class="d-flex me-2">
+                <select name="month" class="form-select form-select-sm me-1" onchange="this.form.submit()">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                        {{ datetime(2020, m, 1).strftime('%B') }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <select name="year" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                    {% for y in range(datetime.now().year, datetime.now().year - 5, -1) %}
+                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="type" value="{{ selected_type }}">
+                <input type="hidden" name="search" value="{{ search_query }}">
+            </form>
+
+            <!-- Type/Search Filter -->
+            <form method="GET" action="{{ url_for('transactions') }}" class="d-flex">
+                <input type="hidden" name="month" value="{{ selected_month }}">
+                <input type="hidden" name="year" value="{{ selected_year }}">
+                <select name="type" class="form-select form-select-sm me-2" style="width: auto;" onchange="this.form.submit()">
+                    <option value="all" {% if selected_type == 'all' %}selected{% endif %}>All Types</option>
+                    <option value="income" {% if selected_type == 'income' %}selected{% endif %}>Income</option>
+                    <option value="expense" {% if selected_type == 'expense' %}selected{% endif %}>Expense</option>
+                </select>
+                <div class="input-group input-group-sm" style="width: 200px;">
+                    <input type="text" name="search" class="form-control" placeholder="Search..."
+                        value="{{ search_query }}" aria-label="Search">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    {% if selected_type != 'all' or search_query %}
+                    <a href="{{ url_for('transactions', month=selected_month, year=selected_year) }}" class="btn btn-outline-danger" type="button">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info mb-3">
+        Showing transactions for
+        <strong>{{ datetime(selected_year, selected_month, 1).strftime('%B %Y') }}</strong>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th class="text-end">Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr data-transaction-id="{{ transaction.id }}">
+                        <td>
+                            <input type="date" class="form-control form-control-sm date-input"
+                                value="{{ transaction.date.strftime('%Y-%m-%d') }}" style="display: none;">
+                            <span class="date-display">{{ transaction.date.strftime('%b %d, %Y') }}</span>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm description-input"
+                                value="{{ transaction.description or '' }}" style="display: none;">
+                            <span class="description-display">{{ transaction.description or 'No description' }}</span>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm category-input" style="display: none;">
+                                {% for cat in ['salary', 'freelance', 'investment', 'other_income',
+                                'housing', 'transportation', 'food', 'utilities',
+                                'healthcare', 'entertainment', 'shopping',
+                                'education', 'other_expense'] %}
+                                <option value="{{ cat }}" {% if cat == transaction.category %}selected{% endif %}>
+                                    {{ cat|capitalize }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <span class="category-display">{{ transaction.category|capitalize }}</span>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm type-input" style="display: none;">
+                                <option value="income" {% if transaction.type == 'income' %}selected{% endif %}>Income</option>
+                                <option value="expense" {% if transaction.type == 'expense' %}selected{% endif %}>Expense</option>
+                            </select>
+                            <span class="badge bg-{{ 'success' if transaction.type == 'income' else 'danger' }} type-display">
+                                {{ transaction.type|capitalize }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <input type="number" step="0.01" class="form-control form-control-sm amount-input"
+                                value="{{ transaction.amount }}" style="display: none;">
+                            <span class="amount-display {{ 'text-success' if transaction.type == 'income' else 'text-danger' }}">
+                                {{ '+' if transaction.type == 'income' else '-' }}₹{{ transaction.amount }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary edit-btn">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-danger delete-btn">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <button class="btn btn-outline-success save-btn" style="display: none;">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary cancel-btn" style="display: none;">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            No transactions found for
+                            {{ datetime(selected_year, selected_month, 1).strftime('%B %Y') }}
+                            {% if selected_type != 'all' or search_query %}with current filters{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.getElementById('transactionsTable');
+
+        // Edit button click handler
+        table.addEventListener('click', function (e) {
+            if (e.target.closest('.edit-btn')) {
+                const row = e.target.closest('tr');
+                toggleEditMode(row, true);
+            }
+
+            // Cancel button click handler
+            if (e.target.closest('.cancel-btn')) {
+                const row = e.target.closest('tr');
+                toggleEditMode(row, false);
+            }
+
+            // Save button click handler
+            if (e.target.closest('.save-btn')) {
+                const row = e.target.closest('tr');
+                saveTransaction(row);
+            }
+
+            // Delete button click handler
+            if (e.target.closest('.delete-btn')) {
+                if (confirm('Are you sure you want to delete this transaction?')) {
+                    deleteTransaction(e.target.closest('tr'));
+                }
+            }
+        });
+
+        function toggleEditMode(row, enable) {
+            const inputs = row.querySelectorAll('.form-control, .form-select');
+            const displays = row.querySelectorAll('.date-display, .description-display, .category-display, .type-display, .amount-display');
+            const editBtn = row.querySelector('.edit-btn');
+            const deleteBtn = row.querySelector('.delete-btn');
+            const saveBtn = row.querySelector('.save-btn');
+            const cancelBtn = row.querySelector('.cancel-btn');
+
+            if (enable) {
+                inputs.forEach(input => input.style.display = 'block');
+                displays.forEach(display => display.style.display = 'none');
+                editBtn.style.display = 'none';
+                deleteBtn.style.display = 'none';
+                saveBtn.style.display = 'block';
+                cancelBtn.style.display = 'block';
+            } else {
+                inputs.forEach(input => input.style.display = 'none');
+                displays.forEach(display => display.style.display = 'block');
+                editBtn.style.display = 'block';
+                deleteBtn.style.display = 'block';
+                saveBtn.style.display = 'none';
+                cancelBtn.style.display = 'none';
+            }
+        }
+
+        function saveTransaction(row) {
+            const transactionId = row.dataset.transactionId;
+            const data = {
+                description: row.querySelector('.description-input').value,
+                category: row.querySelector('.category-input').value,
+                amount: row.querySelector('.amount-input').value,
+                date: row.querySelector('.date-input').value,
+                type: row.querySelector('.type-input').value
+            };
+
+            // Show loading indicator
+            const saveBtn = row.querySelector('.save-btn');
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            saveBtn.disabled = true;
+
+            fetch(`/transaction/${transactionId}/edit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(data)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update display values
+                        row.querySelector('.description-display').textContent =
+                            data.transaction.description || 'No description';
+                        row.querySelector('.category-display').textContent =
+                            data.transaction.category.charAt(0).toUpperCase() + data.transaction.category.slice(1);
+                        row.querySelector('.type-display').textContent =
+                            data.transaction.type.charAt(0).toUpperCase() + data.transaction.type.slice(1);
+                        row.querySelector('.type-display').className =
+                            `badge bg-${data.transaction.type === 'income' ? 'success' : 'danger'} type-display`;
+                        row.querySelector('.amount-display').textContent =
+                            `${data.transaction.type === 'income' ? '+' : '-' }₹${parseFloat(data.transaction.amount).toFixed(2)}`;
+                        row.querySelector('.amount-display').className =
+                            `amount-display text-${data.transaction.type === 'income' ? 'success' : 'danger'}`;
+                        row.querySelector('.date-display').textContent = data.transaction.display_date;
+
+                        toggleEditMode(row, false);
+
+                        // Show success toast/alert
+                        showAlert('Transaction updated successfully', 'success');
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert(`Error saving transaction: ${error.message}`, 'danger');
+                })
+                .finally(() => {
+                    // Reset save button
+                    saveBtn.innerHTML = '<i class="bi bi-check"></i>';
+                    saveBtn.disabled = false;
+                });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top mx-auto mt-3`;
+            alertDiv.style.maxWidth = '500px';
+            alertDiv.style.zIndex = '1100';
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+
+            document.body.appendChild(alertDiv);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alertDiv);
+                bsAlert.close();
+            }, 5000);
+        }
+
+        function deleteTransaction(row) {
+            const transactionId = row.dataset.transactionId;
+
+            fetch(`/transaction/${transactionId}/delete`, {
+                method: 'POST',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        row.remove();
+                        showAlert('Transaction deleted successfully', 'success');
+                    } else {
+                        showAlert('Error: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('An error occurred while deleting', 'danger');
+                });
+        }
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .fixed-top {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Dashboard</h2>
+    <div>
+        <a href="/add_transaction" class="btn btn-primary me-2"><i class="bi bi-plus-circle me-1"></i> Add Transaction</a>
+        <a href="/add_goal" class="btn btn-outline-primary"><i class="bi bi-bullseye me-1"></i> Add Goal</a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    Showing data for <strong>{{ chart_data.current_month }}</strong>
+</div>
+
+<div class="finance-summary">
+    <div class="summary-card income">
+        <h5>Total Income</h5>
+        <h3 class="text-success">₹{{ chart_data.income|round(2) }}</h3>
+        <p class="text-muted">This Month</p>
+    </div>
+    <div class="summary-card expense">
+        <h5>Total Expenses</h5>
+        <h3 class="text-danger">₹{{ chart_data.expenses|round(2) }}</h3>
+        <p class="text-muted">This Month</p>
+    </div>
+    <div class="summary-card balance">
+        <h5>Current Balance</h5>
+        <h3 class="text-primary">₹{{ chart_data.balance|round(2) }}</h3>
+        <p class="text-muted">Net</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5>Income vs Expenses - {{ chart_data.current_month }}</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="incomeExpenseChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5>Expense Categories - {{ chart_data.current_month }}</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="expenseCategoryChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5>Recent Transactions - {{ chart_data.current_month }}</h5>
+                <a href="/transactions?month={{ current_month }}&year={{ current_year }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="transaction-list">
+                    {% for transaction in transactions %}
+                    <div class="transaction-item">
+                        <div>
+                            <strong>{{ transaction.category|capitalize }}</strong>
+                            <p class="mb-0 text-muted small">{{ transaction.description or 'No description' }}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="{{ 'income' if transaction.type == 'income' else 'expense' }}">
+                                {{ '+' if transaction.type == 'income' else '-' }}₹{{ transaction.amount }}
+                            </span>
+                            <p class="mb-0 text-muted small">{{ transaction.date.strftime('%b %d') }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-muted">No transactions this month.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5>Savings Goals</h5>
+                <a href="/goals" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% for goal in goals %}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between">
+                        <h6>{{ goal.name }}</h6>
+                        <span>₹{{ goal.current_amount }}/₹{{ goal.target_amount }}</span>
+                    </div>
+                    <div class="goal-progress mb-2">
+                        <div class="goal-progress-bar"
+                            style="width: {{ (100 if (goal.current_amount / goal.target_amount * 100) > 100 else (goal.current_amount / goal.target_amount * 100))|round(2) }}%">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>{{ goal.target_date.strftime('%b %d, %Y') }}</span>
+                        <span>{{ ((goal.current_amount / goal.target_amount) * 100)|round(1) }}%</span>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-muted">No savings goals yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Income vs Expense Chart
+    const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+    const incomeExpenseChart = new Chart(incomeExpenseCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Income', 'Expenses'],
+            datasets: [{
+                label: 'Amount (₹)',
+                data: [{{ chart_data.income }}, {{ chart_data.expenses }}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 99, 132, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Expense Category Chart
+    const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+    const expenseCategoryChart = new Chart(expenseCategoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_data.expense_categories.keys() | list | tojson }},
+            datasets: [{
+                label: 'Expenses by Category',
+                data: {{ chart_data.expense_categories.values() | list | tojson }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(199, 199, 199, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(199, 199, 199, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

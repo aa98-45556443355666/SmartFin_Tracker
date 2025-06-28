@@ -1,0 +1,12 @@
+run = "flask run"
+modules = ["python-base-3.13"]
+
+[deployment]
+run = ["sh", "-c", "flask run"]
+
+[[ports]]
+localPort = 5000
+externalPort = 3000
+exposeLocalhost = true
+
+[nix]

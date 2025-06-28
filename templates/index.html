@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">Take Control of Your Money</h1>
+        <p class="lead mb-5">Simple, powerful Personal Finance Tracker to manage your budget, track expenses, and
+            achieve your financial goals.</p>
+        <div class="d-flex justify-content-center gap-3">
+            {% if current_user.is_authenticated %}
+            <a href="/dashboard" class="btn btn-light btn-lg px-4">Go to Dashboard</a>
+            {% else %}
+            <a href="/signup" class="btn btn-light btn-lg px-4">Get Started</a>
+            <a href="/login" class="btn btn-outline-light btn-lg px-4">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-md-8 mx-auto text-center">
+            <h2 class="mb-4">Why Choose FinTrack?</h2>
+            <p class="text-muted">Whether you're managing your monthly budget, tracking daily expenses, or setting
+                savings goals, our platform gives you the tools to make smarter financial decisions.</p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <h3>Track Income & Expenses</h3>
+                <p>Monitor your cash flow in real-time with detailed categorization and insights.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-pie-chart"></i>
+                </div>
+                <h3>Visual Reports</h3>
+                <p>Understand your spending patterns with insightful charts and visualizations.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+                <h3>Savings Goals</h3>
+                <p>Set and track your financial goals with progress monitoring and reminders.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <h2 class="mb-4">Real-Time Financial Overview</h2>
+            <p class="text-muted mb-4">Monitor your income and spending in real-time. Our intuitive dashboard gives you
+                a clear picture of your financial health at a glance.</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Track all your accounts in one
+                    place</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Categorize your transactions
+                    automatically</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Get alerts for unusual spending
+                    patterns</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <img src="https://via.placeholder.com/500x300" alt="Dashboard Preview" class="img-fluid rounded shadow">
+        </div>
+    </div>
+
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6 order-md-2">
+            <h2 class="mb-4">Achieve Your Financial Goals</h2>
+            <p class="text-muted mb-4">Whether you're saving for a vacation, a new car, or retirement, FinTrack helps
+                you set realistic goals and track your progress.</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Set custom savings targets</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Visualize your progress</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Get motivated with milestone
+                    celebrations</li>
+            </ul>
+        </div>
+        <div class="col-md-6 order-md-1">
+            <img src="https://via.placeholder.com/500x300" alt="Goals Preview" class="img-fluid rounded shadow">
+        </div>
+    </div>
+</div>
+{% endblock %}

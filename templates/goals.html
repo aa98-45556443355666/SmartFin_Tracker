@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Savings Goals</h2>
+    <a href="/add_goal" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Add Goal</a>
+</div>
+
+<div class="row">
+    {% for goal in goals %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5>{{ goal.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <span class="text-muted">Target:</span>
+                        <h4 class="mb-0">₹{{ goal.target_amount }}</h4>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted">Current:</span>
+                        <h4 class="mb-0">₹{{ goal.current_amount }}</h4>
+                    </div>
+                </div>
+
+                <div class="progress mb-3" style="height: 15px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%"
+                        aria-valuenow="{{ goal.current_amount }}" aria-valuemin="0"
+                        aria-valuemax="{{ goal.target_amount }}">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Progress</span>
+                    <span class="fw-bold">{{ ((goal.current_amount / goal.target_amount) * 100)|round(1) }}%</span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Target Date</span>
+                    <span class="fw-bold">{{ goal.target_date.strftime('%b %d, %Y') }}</span>
+                </div>
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-end">
+                <!-- Add Funds Form -->
+                <form method="POST" action="{{ url_for('add_funds', goal_id=goal.id) }}" class="d-flex me-2">
+                    <div class="input-group input-group-sm" style="width: 120px;">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" step="0.01" min="0.01" class="form-control" name="amount"
+                            placeholder="Amount" required>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Add Funds</button>
+                </form>
+
+                <!-- Delete Form -->
+                <form method="POST" action="{{ url_for('delete_goal', goal_id=goal.id) }}"
+                    onsubmit="return confirm('Are you sure you want to delete this goal?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-bullseye display-1 text-muted mb-3"></i>
+                <h4>No Savings Goals Yet</h4>
+                <p class="text-muted">Start by creating your first savings goal</p>
+                <a href="/add_goal" class="btn btn-primary">Create Goal</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
