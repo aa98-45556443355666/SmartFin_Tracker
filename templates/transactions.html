@@ -99,12 +99,22 @@
                             </select>
                             <span class="category-display">{{ transaction.category|capitalize }}</span>
                         </td>
-                        <td>
-                            <select class="form-select form-select-sm type-input" style="display: none;">
-                                <option value="income" {% if transaction.type == 'income' %}selected{% endif %}>Income</option>
-                                <option value="expense" {% if transaction.type == 'expense' %}selected{% endif %}>Expense</option>
+                        <td style="min-width: 110px;">  
+                            <select class="form-select form-select-sm type-input" 
+                                    style="display: none; 
+                                           width: 110px; 
+                                           padding: 0.25rem 0.5rem;
+                                           height: 28px;
+                                           line-height: 1.5;">
+                                <option value="income" {% if transaction.type=='income' %}selected{% endif %}>Income</option>
+                                <option value="expense" {% if transaction.type=='expense' %}selected{% endif %}>Expense</option>
                             </select>
-                            <span class="badge bg-{{ 'success' if transaction.type == 'income' else 'danger' }} type-display">
+                            <span class="badge type-display d-inline-flex align-items-center justify-content-center" 
+                                  style="width: 110px; 
+                                         height: 28px;
+                                         padding: 0.25rem 0.5rem;
+                                         background-color: {{ 'var(--bs-success)' if transaction.type == 'income' else 'var(--bs-danger)' }};
+                                         color: white;">
                                 {{ transaction.type|capitalize }}
                             </span>
                         </td>
@@ -314,6 +324,12 @@
 
 {% block styles %}
 <style>
+    .type-input, .type-display {
+        box-sizing: border-box;
+        font-size: 0.875rem;
+        font-family: inherit;
+        border-radius: 0.25rem;
+    }
     .fixed-top {
         position: fixed;
         top: 0;
