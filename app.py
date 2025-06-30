@@ -96,54 +96,39 @@ def home():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Get month and year from query parameters or use current month/year
-    selected_month = request.args.get('month', datetime.now().month, type=int)
-    selected_year = request.args.get('year', datetime.now().year, type=int)
+    current_month = datetime.now().month
+    current_year = datetime.now().year
 
-    # Get available months/years with data for dropdown
-    available_months = db.session.query(
-        db.extract('month', Transaction.date).label('month'),
-        db.extract('year', Transaction.date).label('year')
-    ).filter(
-        Transaction.user_id == current_user.id
-    ).distinct().order_by(
-        db.extract('year', Transaction.date).desc(),
-        db.extract('month', Transaction.date).desc()
-    ).all()
-
-    # Get transactions for selected month/year
     transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
-        db.extract('month', Transaction.date) == selected_month,
-        db.extract('year', Transaction.date) == selected_year
+        db.extract('month', Transaction.date) == current_month,
+        db.extract('year', Transaction.date) == current_year
     ).order_by(Transaction.date.desc()).limit(5).all()
 
     goals = Goal.query.filter_by(user_id=current_user.id).all()
 
-    # Calculate income, expenses, balance for selected month
     income = db.session.query(db.func.sum(Transaction.amount)).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == 'income',
-        db.extract('month', Transaction.date) == selected_month,
-        db.extract('year', Transaction.date) == selected_year
+        db.extract('month', Transaction.date) == current_month,
+        db.extract('year', Transaction.date) == current_year
     ).scalar() or 0
 
     expenses = db.session.query(db.func.sum(Transaction.amount)).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == 'expense',
-        db.extract('month', Transaction.date) == selected_month,
-        db.extract('year', Transaction.date) == selected_year
+        db.extract('month', Transaction.date) == current_month,
+        db.extract('year', Transaction.date) == current_year
     ).scalar() or 0
 
     balance = income - expenses
 
-    # Calculate expense categories for selected month
     expense_categories = {}
     expense_transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
         Transaction.type == 'expense',
-        db.extract('month', Transaction.date) == selected_month,
-        db.extract('year', Transaction.date) == selected_year
+        db.extract('month', Transaction.date) == current_month,
+        db.extract('year', Transaction.date) == current_year
     ).all()
 
     for t in expense_transactions:
@@ -157,19 +142,13 @@ def dashboard():
         'expenses': expenses,
         'balance': balance,
         'expense_categories': expense_categories,
-        'current_month': datetime(selected_year, selected_month, 1).strftime('%B %Y'),
-        'selected_month': selected_month,
-        'selected_year': selected_year
+        'current_month': datetime.now().strftime('%B %Y')
     }
 
     return render_template('dashboard.html', 
                          transactions=transactions, 
                          goals=goals, 
-                         chart_data=chart_data,
-                         available_months=available_months,
-                         current_month=selected_month,
-                         current_year=selected_year,
-                         datetime=datetime)
+                         chart_data=chart_data)
 
 @app.route('/transactions')
 @login_required

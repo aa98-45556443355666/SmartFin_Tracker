@@ -4,22 +4,8 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Dashboard</h2>
     <div>
-        <form method="GET" action="{{ url_for('dashboard') }}" class="d-flex align-items-center">
-            <select name="month" class="form-select form-select-sm me-2" style="width: 120px;" onchange="this.form.submit()">
-                {% for m in range(1, 13) %}
-                <option value="{{ m }}" {% if m==chart_data.selected_month %}selected{% endif %}>
-                    {{ datetime(2020, m, 1).strftime('%B') }}
-                </option>
-                {% endfor %}
-            </select>
-            <select name="year" class="form-select form-select-sm me-2" style="width: 90px;" onchange="this.form.submit()">
-                {% for y in range(datetime.now().year, datetime.now().year - 5, -1) %}
-                <option value="{{ y }}" {% if y==chart_data.selected_year %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
-            <a href="/add_transaction" class="btn btn-primary btn-sm me-2"><i class="bi bi-plus-circle me-1"></i> Add Transaction</a>
-            <a href="/add_goal" class="btn btn-outline-primary btn-sm"><i class="bi bi-bullseye me-1"></i> Add Goal</a>
-        </form>
+        <a href="/add_transaction" class="btn btn-primary me-2"><i class="bi bi-plus-circle me-1"></i> Add Transaction</a>
+        <a href="/add_goal" class="btn btn-outline-primary"><i class="bi bi-bullseye me-1"></i> Add Goal</a>
     </div>
 </div>
 
@@ -31,12 +17,12 @@
     <div class="summary-card income">
         <h5>Total Income</h5>
         <h3 class="text-success">₹{{ chart_data.income|round(2) }}</h3>
-        <p class="text-muted">{{ chart_data.current_month }}</p>
+        <p class="text-muted">This Month</p>
     </div>
     <div class="summary-card expense">
         <h5>Total Expenses</h5>
         <h3 class="text-danger">₹{{ chart_data.expenses|round(2) }}</h3>
-        <p class="text-muted">{{ chart_data.current_month }}</p>
+        <p class="text-muted">This Month</p>
     </div>
     <div class="summary-card balance">
         <h5>Current Balance</h5>
@@ -48,17 +34,8 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div class="card-header bg-white">
                 <h5>Income vs Expenses - {{ chart_data.current_month }}</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="chartTypeDropdown" data-bs-toggle="dropdown">
-                        Chart Type
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="changeChartType('bar')">Bar Chart</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="changeChartType('line')">Line Chart</a></li>
-                    </ul>
-                </div>
             </div>
             <div class="card-body">
                 <canvas id="incomeExpenseChart" height="250"></canvas>
@@ -67,17 +44,8 @@
     </div>
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div class="card-header bg-white">
                 <h5>Expense Categories - {{ chart_data.current_month }}</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="pieChartTypeDropdown" data-bs-toggle="dropdown">
-                        View As
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="changePieChartType('doughnut')">Doughnut</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="changePieChartType('pie')">Pie Chart</a></li>
-                    </ul>
-                </div>
             </div>
             <div class="card-body">
                 <canvas id="expenseCategoryChart" height="250"></canvas>
@@ -91,7 +59,7 @@
         <div class="card">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5>Recent Transactions - {{ chart_data.current_month }}</h5>
-                <a href="/transactions?month={{ chart_data.selected_month }}&year={{ chart_data.selected_year }}" class="btn btn-sm btn-outline-primary">View All</a>
+                <a href="/transactions?month={{ current_month }}&year={{ current_year }}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <div class="card-body">
                 <div class="transaction-list">
@@ -109,7 +77,7 @@
                         </div>
                     </div>
                     {% else %}
-                    <p class="text-center text-muted">No transactions in {{ chart_data.current_month }}.</p>
+                    <p class="text-center text-muted">No transactions this month.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -150,210 +118,76 @@
 
 {% block scripts %}
 <script>
-    // Global chart variables
-    let incomeExpenseChart;
-    let expenseCategoryChart;
-
-    // Initialize charts when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        initIncomeExpenseChart();
-        initExpenseCategoryChart();
+    // Income vs Expense Chart
+    const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+    const incomeExpenseChart = new Chart(incomeExpenseCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Income', 'Expenses'],
+            datasets: [{
+                label: 'Amount (₹)',
+                data: [{{ chart_data.income }}, {{ chart_data.expenses }}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 99, 132, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
     });
 
-    // Income vs Expense Chart
-    function initIncomeExpenseChart() {
-        const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
-        incomeExpenseChart = new Chart(incomeExpenseCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Income', 'Expenses'],
-                datasets: [{
-                    label: 'Amount (₹)',
-                    data: [{{ chart_data.income }}, {{ chart_data.expenses }}],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(255, 99, 132, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '₹' + value;
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ₹' + context.raw;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
     // Expense Category Chart
-    function initExpenseCategoryChart() {
-        const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
-        expenseCategoryChart = new Chart(expenseCategoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: {{ chart_data.expense_categories.keys() | list | tojson }},
-                datasets: [{
-                    label: 'Expenses by Category',
-                    data: {{ chart_data.expense_categories.values() | list | tojson }},
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(255, 206, 86, 0.7)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(153, 102, 255, 0.7)',
-                        'rgba(255, 159, 64, 0.7)',
-                        'rgba(199, 199, 199, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(199, 199, 199, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ₹' + context.raw;
-                            }
-                        }
-                    }
+    const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+    const expenseCategoryChart = new Chart(expenseCategoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_data.expense_categories.keys() | list | tojson }},
+            datasets: [{
+                label: 'Expenses by Category',
+                data: {{ chart_data.expense_categories.values() | list | tojson }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(199, 199, 199, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(199, 199, 199, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
                 }
             }
-        });
-    }
-
-    // Change chart type for income/expense chart
-    function changeChartType(type) {
-        incomeExpenseChart.destroy();
-        const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
-        incomeExpenseChart = new Chart(incomeExpenseCtx, {
-            type: type,
-            data: {
-                labels: ['Income', 'Expenses'],
-                datasets: [{
-                    label: 'Amount (₹)',
-                    data: [{{ chart_data.income }}, {{ chart_data.expenses }}],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(255, 99, 132, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '₹' + value;
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ₹' + context.raw;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Change chart type for expense category chart
-    function changePieChartType(type) {
-        expenseCategoryChart.destroy();
-        const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
-        expenseCategoryChart = new Chart(expenseCategoryCtx, {
-            type: type,
-            data: {
-                labels: {{ chart_data.expense_categories.keys() | list | tojson }},
-                datasets: [{
-                    label: 'Expenses by Category',
-                    data: {{ chart_data.expense_categories.values() | list | tojson }},
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(255, 206, 86, 0.7)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(153, 102, 255, 0.7)',
-                        'rgba(255, 159, 64, 0.7)',
-                        'rgba(199, 199, 199, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(199, 199, 199, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ₹' + context.raw;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
+        }
+    });
 </script>
 {% endblock %}
