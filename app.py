@@ -221,7 +221,7 @@ def transactions():
 def login():
   if current_user.is_authenticated:
     flash('You are already logged in!', 'info')
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('home'))
   form = LoginForm()
   if form.validate_on_submit():
     user = User.query.filter_by(email=form.email.data).first()
@@ -252,7 +252,7 @@ def safe_password_hash(password):
 def signup():
   if current_user.is_authenticated: 
     flash('Please logout before creating a new account!', 'info')
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('home'))
   form = SignupForm()
   if form.validate_on_submit():
     if form.password.data != form.confirm_password.data:
