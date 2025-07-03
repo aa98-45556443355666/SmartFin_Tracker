@@ -1,12 +1,8 @@
-run = "flask run"
 modules = ["python-base-3.13"]
-
+[nix]
 [deployment]
-run = ["sh", "-c", "flask run"]
+run = ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
 
 [[ports]]
-localPort = 5000
-externalPort = 3000
-exposeLocalhost = true
-
-[nix]
+localPort = 8080
+externalPort = 80
