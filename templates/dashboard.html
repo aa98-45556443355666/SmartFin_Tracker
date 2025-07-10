@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Dashboard</h2>
@@ -150,17 +149,14 @@
 
 {% block scripts %}
 <script>
-    // Global chart variables
     let incomeExpenseChart;
     let expenseCategoryChart;
 
-    // Initialize charts when page loads
     document.addEventListener('DOMContentLoaded', function() {
         initIncomeExpenseChart();
         initExpenseCategoryChart();
     });
 
-    // Income vs Expense Chart
     function initIncomeExpenseChart() {
         const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
         incomeExpenseChart = new Chart(incomeExpenseCtx, {
@@ -207,7 +203,6 @@
         });
     }
 
-    // Expense Category Chart
     function initExpenseCategoryChart() {
         const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
         expenseCategoryChart = new Chart(expenseCategoryCtx, {

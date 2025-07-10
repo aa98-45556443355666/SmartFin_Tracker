@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>All Transactions</h2>
@@ -12,7 +11,6 @@
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h5>Transaction History</h5>
         <div class="d-flex align-items-center">
-            <!-- Month/Year Filter -->
             <form method="GET" action="{{ url_for('transactions') }}" class="d-flex me-2">
                 <select name="month" class="form-select form-select-sm me-1" onchange="this.form.submit()">
                     {% for m in range(1, 13) %}
@@ -30,7 +28,6 @@
                 <input type="hidden" name="search" value="{{ search_query }}">
             </form>
 
-            <!-- Type/Search Filter -->
             <form method="GET" action="{{ url_for('transactions') }}" class="d-flex">
                 <input type="hidden" name="month" value="{{ selected_month }}">
                 <input type="hidden" name="year" value="{{ selected_year }}">
@@ -161,27 +158,23 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const table = document.getElementById('transactionsTable');
-
-        // Edit button click handler
+        
         table.addEventListener('click', function (e) {
             if (e.target.closest('.edit-btn')) {
                 const row = e.target.closest('tr');
                 toggleEditMode(row, true);
             }
 
-            // Cancel button click handler
             if (e.target.closest('.cancel-btn')) {
                 const row = e.target.closest('tr');
                 toggleEditMode(row, false);
             }
 
-            // Save button click handler
             if (e.target.closest('.save-btn')) {
                 const row = e.target.closest('tr');
                 saveTransaction(row);
             }
 
-            // Delete button click handler
             if (e.target.closest('.delete-btn')) {
                 if (confirm('Are you sure you want to delete this transaction?')) {
                     deleteTransaction(e.target.closest('tr'));
@@ -224,7 +217,6 @@
                 type: row.querySelector('.type-input').value
             };
 
-            // Show loading indicator
             const saveBtn = row.querySelector('.save-btn');
             saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
             saveBtn.disabled = true;
@@ -244,7 +236,6 @@
                 })
                 .then(data => {
                     if (data.success) {
-                        // Update display values
                         row.querySelector('.description-display').textContent =
                             data.transaction.description || 'No description';
                         row.querySelector('.category-display').textContent =
@@ -260,8 +251,6 @@
                         row.querySelector('.date-display').textContent = data.transaction.display_date;
 
                         toggleEditMode(row, false);
-
-                        // Show success toast/alert
                         showAlert('Transaction updated successfully', 'success');
                     } else {
                         throw new Error(data.message);
@@ -272,7 +261,6 @@
                     showAlert(`Error saving transaction: ${error.message}`, 'danger');
                 })
                 .finally(() => {
-                    // Reset save button
                     saveBtn.innerHTML = '<i class="bi bi-check"></i>';
                     saveBtn.disabled = false;
                 });
@@ -290,8 +278,6 @@
             `;
 
             document.body.appendChild(alertDiv);
-
-            // Auto-dismiss after 5 seconds
             setTimeout(() => {
                 const bsAlert = new bootstrap.Alert(alertDiv);
                 bsAlert.close();

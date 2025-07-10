@@ -19,13 +19,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
   'DATABASE_URL', 'sqlite:///finance.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize extensions
 db = SQLAlchemy(app)
 Bootstrap(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Database Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -39,7 +37,7 @@ class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    type = db.Column(db.String(20), nullable=False)  # 'income' or 'expense'
+    type = db.Column(db.String(20), nullable=False)  
     category = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(200))
     date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -53,7 +51,6 @@ class Goal(db.Model):
     target_date = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Forms
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -84,11 +81,10 @@ class GoalForm(FlaskForm):
     current_amount = FloatField('Current Amount', default=0.0)
     target_date = DateField('Target Date', validators=[DataRequired()])
 
-# Flask-Login loader
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-# Routes
+  
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -96,11 +92,9 @@ def home():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Get month and year from query parameters or use current month/year
     selected_month = request.args.get('month', datetime.now().month, type=int)
     selected_year = request.args.get('year', datetime.now().year, type=int)
 
-    # Get available months/years with data for dropdown
     available_months = db.session.query(
         db.extract('month', Transaction.date).label('month'),
         db.extract('year', Transaction.date).label('year')
@@ -111,7 +105,6 @@ def dashboard():
         db.extract('month', Transaction.date).desc()
     ).all()
 
-    # Get transactions for selected month/year
     transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
         db.extract('month', Transaction.date) == selected_month,
@@ -119,8 +112,7 @@ def dashboard():
     ).order_by(Transaction.date.desc()).limit(5).all()
 
     goals = Goal.query.filter_by(user_id=current_user.id).all()
-
-    # Calculate income, expenses, balance for selected month
+  
     income = db.session.query(db.func.sum(Transaction.amount)).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == 'income',
@@ -137,7 +129,6 @@ def dashboard():
 
     balance = income - expenses
 
-    # Calculate expense categories for selected month
     expense_categories = {}
     expense_transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
@@ -342,8 +333,7 @@ def edit_transaction(transaction_id):
     data = request.form
     transaction.description = data.get('description', transaction.description)
     transaction.category = data.get('category', transaction.category)
-
-    # Validate amount
+    
     try:
       amount = float(data.get('amount', transaction.amount))
       if amount <= 0:
@@ -354,8 +344,7 @@ def edit_transaction(transaction_id):
           'success': False,
           'message': 'Invalid amount: ' + str(e)
       }), 400
-
-    # Validate date
+      
     try:
       date_str = data.get('date')
       if date_str:
@@ -421,7 +410,7 @@ def goals():
 def add_funds(goal_id):
   goal = Goal.query.get_or_404(goal_id)
   if goal.user_id != current_user.id:
-    abort(403)  # Forbidden
+    abort(403)
 
   try:
     amount = float(request.form.get('amount'))
@@ -447,7 +436,7 @@ def add_funds(goal_id):
 def delete_goal(goal_id):
   goal = Goal.query.get_or_404(goal_id)
   if goal.user_id != current_user.id:
-    abort(403)  # Forbidden
+    abort(403) 
 
   try:
     db.session.delete(goal)
@@ -460,8 +449,6 @@ def delete_goal(goal_id):
 
   return redirect(url_for('goals'))
 
-
-# Initialize database
 with app.app_context():
   db.create_all()
 
