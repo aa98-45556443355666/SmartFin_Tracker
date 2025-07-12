@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField, FloatField, SelectField, TextAre
 from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from flask_wtf.csrf import CSRFProtect
 import datetime as dt_module
 import os
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
   'DATABASE_URL', 'sqlite:///finance.db')
@@ -403,6 +405,58 @@ def delete_transaction(transaction_id):
 def goals():
   goals = Goal.query.filter_by(user_id=current_user.id).all()
   return render_template('goals.html', goals=goals)
+
+@app.route('/goal/<int:goal_id>/edit', methods=['POST'])
+@login_required
+def edit_goal(goal_id):
+    goal = Goal.query.get_or_404(goal_id)
+    if goal.user_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+
+    try:
+        data = request.get_json()
+        if not data.get('name') or len(data['name']) < 2:
+            return jsonify({'success': False, 'message': 'Name must be at least 2 characters'}), 400
+
+        try:
+            target_amount = float(data['target_amount'])
+            current_amount = float(data['current_amount'])
+            if target_amount <= 0 or current_amount < 0:
+                raise ValueError("Amounts must be positive")
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'message': 'Invalid amount values'}), 400
+
+        try:
+            target_date = datetime.strptime(data['target_date'], '%Y-%m-%d').date()
+            if target_date < datetime.now().date():
+                return jsonify({'success': False, 'message': 'Target date cannot be in the past'}), 400
+        except ValueError:
+            return jsonify({'success': False, 'message': 'Invalid date format'}), 400
+
+        goal.name = data['name']
+        goal.target_amount = target_amount
+        goal.current_amount = current_amount
+        goal.target_date = target_date
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Goal updated successfully',
+            'goal': {
+                'name': goal.name,
+                'target_amount': goal.target_amount,
+                'current_amount': goal.current_amount,
+                'target_date': goal.target_date.strftime('%Y-%m-%d')
+            }
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error updating goal: {str(e)}'
+        }), 500
 
 
 @app.route('/goal/<int:goal_id>/add_funds', methods=['POST'])
