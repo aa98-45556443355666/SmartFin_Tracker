@@ -5,7 +5,7 @@
         <h1 class="display-4 fw-bold mb-4">Take Control of Your Money</h1>
         <p class="lead mb-5">Simple, powerful Personal Finance Tracker to manage your budget, track expenses, and
             achieve your financial goals.</p>
-        <div class="d-flex justify-content-center gap-3">
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
             {% if current_user.is_authenticated %}
             <a href="/dashboard" class="btn btn-light btn-lg px-4">Go to Dashboard</a>
             {% else %}
@@ -15,7 +15,6 @@
         </div>
     </div>
 </div>
-
 <div class="container">
     <div class="row mb-5">
         <div class="col-md-8 mx-auto text-center">
@@ -24,7 +23,6 @@
                 savings goals, our platform gives you the tools to make smarter financial decisions.</p>
         </div>
     </div>
-
     <div class="row mb-5">
         <div class="col-md-4 mb-4">
             <div class="feature-card">
@@ -32,7 +30,7 @@
                     <i class="bi bi-cash-coin"></i>
                 </div>
                 <h3>Track Income & Expenses</h3>
-                <p>Monitor your cash flow in real-time with detailed categorization and insights.</p>
+                <p class="mb-0">Monitor your cash flow in real-time with detailed categorization and insights.</p>
             </div>
         </div>
         <div class="col-md-4 mb-4">
@@ -41,7 +39,7 @@
                     <i class="bi bi-pie-chart"></i>
                 </div>
                 <h3>Visual Reports</h3>
-                <p>Understand your spending patterns with insightful charts and visualizations.</p>
+                <p class="mb-0">Understand your spending patterns with insightful charts and visualizations.</p>
             </div>
         </div>
         <div class="col-md-4 mb-4">
@@ -50,7 +48,7 @@
                     <i class="bi bi-bullseye"></i>
                 </div>
                 <h3>Savings Goals</h3>
-                <p>Set and track your financial goals with progress monitoring.</p>
+                <p class="mb-0">Set and track your financial goals with progress monitoring.</p>
             </div>
         </div>
     </div>

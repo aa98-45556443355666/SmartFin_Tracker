@@ -28,20 +28,19 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: none;
-            margin-bottom: 20px;
-            transition: transform 0.3s;
+        .navbar-brand {
+            font-size: 1.1rem;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: none;
+            margin-bottom: 20px;
         }
 
         .card-header {
-            border-radius: 15px 15px 0 0 !important;
+            border-radius: 10px 10px 0 0 !important;
             background-color: #fff;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
@@ -58,30 +57,18 @@
 
         .finance-summary {
             display: flex;
-            justify-content: space-around;
-            text-align: center;
-            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .summary-card {
-            padding: 20px;
-            border-radius: 15px;
+            padding: 15px;
+            border-radius: 10px;
             background: white;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             flex: 1;
-            margin: 0 10px;
-        }
-
-        .summary-card.income {
-            border-top: 4px solid #4CAF50;
-        }
-
-        .summary-card.expense {
-            border-top: 4px solid #F44336;
-        }
-
-        .summary-card.balance {
-            border-top: 4px solid #2196F3;
+            min-width: 200px;
         }
 
         .transaction-list .transaction-item {
@@ -91,14 +78,6 @@
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .transaction-list .income {
-            color: #4CAF50;
-        }
-
-        .transaction-list .expense {
-            color: #F44336;
-        }
-
         .goal-progress {
             height: 10px;
             border-radius: 5px;
@@ -106,42 +85,48 @@
             overflow: hidden;
         }
 
-        .goal-progress-bar {
-            height: 100%;
-            background-color: var(--primary);
-        }
-
         .hero-section {
             background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
             color: white;
-            padding: 100px 0;
-            border-radius: 0 0 30px 30px;
-            margin-bottom: 50px;
+            padding: 80px 0;
+            border-radius: 0;
+            margin-bottom: 30px;
         }
 
         .feature-card {
             text-align: center;
-            padding: 30px 20px;
+            padding: 25px 15px;
             background-color: white;
-            border-radius: 15px;
+            border-radius: 10px;
             height: 100%;
+            margin-bottom: 15px;
         }
 
         .feature-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .auth-container {
-            max-width: 500px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 2rem 0;
+            padding: 1.5rem;
         }
 
         main {
             flex: 1;
+            padding-bottom: 20px;
         }
+
+        footer {
+            padding: 1.5rem 0;
+        }
+
+        .form-control, .form-select {
+            padding: 0.5rem 0.75rem;
+        }
+
         @keyframes slideIn {
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -150,16 +135,62 @@
         .alert {
             animation: slideIn 0.3s ease-out;
         }
-        
         @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 0;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .hero-section p {
+                font-size: 1rem;
+            }
+
+            .navbar-brand {
+                font-size: 1rem;
+            }
+
+            .card {
+                border-radius: 8px;
+            }
+
             .finance-summary {
                 flex-direction: column;
             }
+
             .summary-card {
-                margin: 10px 0;
+                width: 100%;
             }
+
+            .btn-lg {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
             .hero-section {
-                padding: 60px 0;
+                padding: 50px 0;
+            }
+
+            .hero-section h1 {
+                font-size: 1.75rem;
+            }
+
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            .navbar-collapse {
+                padding-top: 10px;
+            }
+
+            .dropdown-menu {
+                position: static;
+                float: none;
             }
         }
     </style>
@@ -170,7 +201,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold text-primary" href="{{ url_for('home') }}">
-                <i class="bi bi-piggy-bank me-2"></i>SmartFin Tracker
+                <i class="bi bi-piggy-bank me-1"></i>SmartFin
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -209,8 +240,8 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('login') }}">Login</a>
                     </li>
-                    <li class="nav-item ms-2">
-                        <a class="btn btn-primary" href="{{ url_for('signup') }}">Sign Up</a>
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                        <a class="btn btn-primary w-100" href="{{ url_for('signup') }}">Sign Up</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -245,10 +276,10 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-white mt-auto py-4">
+    <footer class="bg-white mt-auto py-3">
         <div class="container text-center">
-            <p class="mb-0 text-muted">
-                &copy; <span id="current-year">2025</span> SmartFin Tracker, Inc. All rights reserved.
+            <p class="mb-0 text-muted small">
+                &copy; <span id="current-year">2025</span> SmartFin Tracker. All rights reserved.
             </p>
         </div>
     </footer>

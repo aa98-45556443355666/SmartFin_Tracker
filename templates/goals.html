@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Savings Goals</h2>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+    <h2 class="mb-3 mb-md-0">Savings Goals</h2>
     <a href="/add_goal" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Add Goal</a>
 </div>
-
 <div class="row">
     {% for goal in goals %}
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5>
+                <h5 class="mb-0">
                     <span class="goal-name-display">{{ goal.name }}</span>
                     <input type="text" class="form-control form-control-sm goal-name-edit" value="{{ goal.name }}" style="display: none; width: auto;">
                 </h5>
@@ -27,17 +26,17 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="d-flex justify-content-between mb-3">
-                    <div>
-                        <span class="text-muted">Target:</span>
+                <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+                    <div class="mb-2 mb-md-0">
+                        <span class="text-muted small">Target:</span>
                         <h4 class="mb-0">
                             <span class="goal-target-display">₹{{ goal.target_amount }}</span>
                             <input type="number" step="0.01" min="0.01" class="form-control form-control-sm goal-target-edit" 
                                    value="{{ goal.target_amount }}" style="display: none; width: 120px;">
                         </h4>
                     </div>
-                    <div class="text-end">
-                        <span class="text-muted">Current:</span>
+                    <div class="text-md-end">
+                        <span class="text-muted small">Current:</span>
                         <h4 class="mb-0">
                             <span class="goal-current-display">₹{{ goal.current_amount }}</span>
                             <input type="number" step="0.01" min="0" class="form-control form-control-sm goal-current-edit" 
@@ -45,21 +44,18 @@
                         </h4>
                     </div>
                 </div>
-
                 <div class="progress mb-3" style="height: 15px;">
                     <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%"
                         aria-valuenow="{{ goal.current_amount }}" aria-valuemin="0"
                         aria-valuemax="{{ goal.target_amount }}">
                     </div>
                 </div>
-
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Progress</span>
+                    <span class="text-muted small">Progress</span>
                     <span class="fw-bold">{{ ((goal.current_amount / goal.target_amount) * 100)|round(1) }}%</span>
                 </div>
-
                 <div class="d-flex justify-content-between">
-                    <span class="text-muted">Target Date</span>
+                    <span class="text-muted small">Target Date</span>
                     <span class="fw-bold">
                         <span class="goal-date-display">{{ goal.target_date.strftime('%b %d, %Y') }}</span>
                         <input type="date" class="form-control form-control-sm goal-date-edit" 
@@ -67,21 +63,20 @@
                     </span>
                 </div>
             </div>
-            <div class="card-footer bg-white d-flex justify-content-end">
-                <form method="POST" action="{{ url_for('add_funds', goal_id=goal.id) }}" class="d-flex me-2">
+            <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-end gap-2">
+                <form method="POST" action="{{ url_for('add_funds', goal_id=goal.id) }}" class="d-flex me-md-2 w-100 w-md-auto">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <div class="input-group input-group-sm" style="width: 120px;">
+                    <div class="input-group input-group-sm flex-grow-1">
                         <span class="input-group-text">₹</span>
                         <input type="number" step="0.01" min="0.01" class="form-control" name="amount"
                                placeholder="Amount" required>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Add Funds</button>
+                    <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Add</button>
                 </form>
-
                 <form method="POST" action="{{ url_for('delete_goal', goal_id=goal.id) }}"
-                      onsubmit="return confirm('Are you sure you want to delete this goal?');">
+                      onsubmit="return confirm('Are you sure you want to delete this goal?');" class="w-100 w-md-auto">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">Delete</button>
                 </form>
             </div>
         </div>
@@ -99,6 +94,7 @@
     </div>
     {% endfor %}
 </div>
+{% endblock %}
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -120,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
             disableEditMode(goalCard);
         });
     });
-
     function enableEditMode(goalCard) {
         goalCard.querySelector('.goal-name-display').style.display = 'none';
         goalCard.querySelector('.goal-name-edit').style.display = 'inline-block';
@@ -153,6 +148,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const targetAmount = parseFloat(goalCard.querySelector('.goal-target-edit').value);
         const currentAmount = parseFloat(goalCard.querySelector('.goal-current-edit').value);
         const targetDate = goalCard.querySelector('.goal-date-edit').value;
+        const saveBtn = goalCard.querySelector('.save-goal-btn');
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        saveBtn.disabled = true;
         try {
             const response = await fetch(`/goal/${goalId}/edit`, {
                 method: 'POST',
@@ -178,28 +176,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     month: 'short', 
                     day: 'numeric' 
                 });
-                const progressPercentage = goalCard.querySelector('.progress-percentage');
-                if (progressPercentage) {
-                    const progress = (currentAmount / targetAmount) * 100;
-                    progressPercentage.textContent = progress.toFixed(1) + '%';
-                }
                 const progressBar = goalCard.querySelector('.progress-bar');
                 if (progressBar) {
                     const progress = (currentAmount / targetAmount) * 100;
                     progressBar.style.width = `${progress}%`;
                     progressBar.setAttribute('aria-valuenow', currentAmount);
                 }
+                const progressText = goalCard.querySelectorAll('.d-flex.justify-content-between.mb-2 span.fw-bold')[0];
+                if (progressText) {
+                    progressText.textContent = ((currentAmount / targetAmount) * 100).toFixed(1) + '%';
+                }
                 disableEditMode(goalCard);     
                 showFlashMessage('Goal updated successfully!', 'success');
             } else {
-                showFlashMessage(result.message || 'Error updating goal', 'danger');
+                throw new Error(result.message || 'Error updating goal');
             }
         } catch (error) {
             console.error('Error:', error);
-            showFlashMessage('Error updating goal', 'danger');
+            showFlashMessage(error.message || 'Error updating goal', 'danger');
+        } finally {
+            saveBtn.innerHTML = '<i class="bi bi-check"></i>';
+            saveBtn.disabled = false;
         }
     }
-
     function showFlashMessage(message, type) {
         let flashContainer = document.getElementById('flash-messages');
         if (!flashContainer) {
@@ -225,5 +224,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-{% endblock %}
 {% endblock %}
