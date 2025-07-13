@@ -99,7 +99,6 @@
     </div>
     {% endfor %}
 </div>
-
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -125,46 +124,35 @@ document.addEventListener('DOMContentLoaded', function() {
     function enableEditMode(goalCard) {
         goalCard.querySelector('.goal-name-display').style.display = 'none';
         goalCard.querySelector('.goal-name-edit').style.display = 'inline-block';
-
         goalCard.querySelector('.goal-target-display').style.display = 'none';
         goalCard.querySelector('.goal-target-edit').style.display = 'inline-block';
-
         goalCard.querySelector('.goal-current-display').style.display = 'none';
         goalCard.querySelector('.goal-current-edit').style.display = 'inline-block';
-
         goalCard.querySelector('.goal-date-display').style.display = 'none';
         goalCard.querySelector('.goal-date-edit').style.display = 'inline-block';
-
         goalCard.querySelector('.edit-goal-btn').style.display = 'none';
         goalCard.querySelector('.save-goal-btn').style.display = 'inline-block';
         goalCard.querySelector('.cancel-edit-btn').style.display = 'inline-block';
     }
-
     function disableEditMode(goalCard) {
         goalCard.querySelector('.goal-name-display').style.display = 'inline-block';
         goalCard.querySelector('.goal-name-edit').style.display = 'none';
-
         goalCard.querySelector('.goal-target-display').style.display = 'inline-block';
         goalCard.querySelector('.goal-target-edit').style.display = 'none';
-
         goalCard.querySelector('.goal-current-display').style.display = 'inline-block';
         goalCard.querySelector('.goal-current-edit').style.display = 'none';
-
         goalCard.querySelector('.goal-date-display').style.display = 'inline-block';
         goalCard.querySelector('.goal-date-edit').style.display = 'none';
-
         goalCard.querySelector('.edit-goal-btn').style.display = 'inline-block';
         goalCard.querySelector('.save-goal-btn').style.display = 'none';
         goalCard.querySelector('.cancel-edit-btn').style.display = 'none';
     }
-
     async function saveGoalChanges(goalCard) {
         const goalId = goalCard.querySelector('.edit-goal-btn').getAttribute('data-goal-id');
         const name = goalCard.querySelector('.goal-name-edit').value;
         const targetAmount = parseFloat(goalCard.querySelector('.goal-target-edit').value);
         const currentAmount = parseFloat(goalCard.querySelector('.goal-current-edit').value);
         const targetDate = goalCard.querySelector('.goal-date-edit').value;
-
         try {
             const response = await fetch(`/goal/${goalId}/edit`, {
                 method: 'POST',
@@ -179,14 +167,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     target_date: targetDate
                 })
             });
-
             const result = await response.json();
-
             if (response.ok && result.success) {
                 goalCard.querySelector('.goal-name-display').textContent = name;
                 goalCard.querySelector('.goal-target-display').textContent = '₹' + targetAmount;
-                goalCard.querySelector('.goal-current-display').textContent = '₹' + currentAmount;
-                
+                goalCard.querySelector('.goal-current-display').textContent = '₹' + currentAmount;      
                 const date = new Date(targetDate);
                 goalCard.querySelector('.goal-date-display').textContent = date.toLocaleDateString('en-US', { 
                     year: 'numeric', 
@@ -204,8 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     progressBar.style.width = `${progress}%`;
                     progressBar.setAttribute('aria-valuenow', currentAmount);
                 }
-                disableEditMode(goalCard);
-                
+                disableEditMode(goalCard);     
                 showFlashMessage('Goal updated successfully!', 'success');
             } else {
                 showFlashMessage(result.message || 'Error updating goal', 'danger');

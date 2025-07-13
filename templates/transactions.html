@@ -158,30 +158,25 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const table = document.getElementById('transactionsTable');
-        
         table.addEventListener('click', function (e) {
             if (e.target.closest('.edit-btn')) {
                 const row = e.target.closest('tr');
                 toggleEditMode(row, true);
             }
-
             if (e.target.closest('.cancel-btn')) {
                 const row = e.target.closest('tr');
                 toggleEditMode(row, false);
             }
-
             if (e.target.closest('.save-btn')) {
                 const row = e.target.closest('tr');
                 saveTransaction(row);
             }
-
             if (e.target.closest('.delete-btn')) {
                 if (confirm('Are you sure you want to delete this transaction?')) {
                     deleteTransaction(e.target.closest('tr'));
                 }
             }
         });
-
         function toggleEditMode(row, enable) {
             const inputs = row.querySelectorAll('.form-control, .form-select');
             const displays = row.querySelectorAll('.date-display, .description-display, .category-display, .type-display, .amount-display');
@@ -189,7 +184,6 @@
             const deleteBtn = row.querySelector('.delete-btn');
             const saveBtn = row.querySelector('.save-btn');
             const cancelBtn = row.querySelector('.cancel-btn');
-
             if (enable) {
                 inputs.forEach(input => input.style.display = 'block');
                 displays.forEach(display => display.style.display = 'none');
@@ -206,69 +200,101 @@
                 cancelBtn.style.display = 'none';
             }
         }
-
-        function saveTransaction(row) {
+        async function saveTransaction(row) {
             const transactionId = row.dataset.transactionId;
             const data = {
                 description: row.querySelector('.description-input').value,
                 category: row.querySelector('.category-input').value,
                 amount: row.querySelector('.amount-input').value,
                 date: row.querySelector('.date-input').value,
-                type: row.querySelector('.type-input').value
+                type: row.querySelector('.type-input').value,
+                csrf_token: "{{ csrf_token() }}" 
             };
-
             const saveBtn = row.querySelector('.save-btn');
             saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
             saveBtn.disabled = true;
-
-            fetch(`/transaction/${transactionId}/edit`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(data)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => Promise.reject(err));
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        row.querySelector('.description-display').textContent =
-                            data.transaction.description || 'No description';
-                        row.querySelector('.category-display').textContent =
-                            data.transaction.category.charAt(0).toUpperCase() + data.transaction.category.slice(1);
-                        row.querySelector('.type-display').textContent =
-                            data.transaction.type.charAt(0).toUpperCase() + data.transaction.type.slice(1);
-                        row.querySelector('.type-display').className =
-                            `badge bg-${data.transaction.type === 'income' ? 'success' : 'danger'} type-display`;
-                        row.querySelector('.amount-display').textContent =
-                            `${data.transaction.type === 'income' ? '+' : '-' }₹${parseFloat(data.transaction.amount).toFixed(2)}`;
-                        row.querySelector('.amount-display').className =
-                            `amount-display text-${data.transaction.type === 'income' ? 'success' : 'danger'}`;
-                        row.querySelector('.date-display').textContent = data.transaction.display_date;
-
-                        toggleEditMode(row, false);
-                        showAlert('Transaction updated successfully', 'success');
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showAlert(`Error saving transaction: ${error.message}`, 'danger');
-                })
-                .finally(() => {
-                    saveBtn.innerHTML = '<i class="bi bi-check"></i>';
-                    saveBtn.disabled = false;
+            try {
+                const response = await fetch(`/transaction/${transactionId}/edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    },
+                    body: new URLSearchParams(data)
                 });
-        }
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+                }
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to save transaction');
+                }
+                if (result.success) {
+                    row.querySelector('.description-display').textContent = 
+                        result.transaction.description || 'No description';
+                    row.querySelector('.category-display').textContent = 
+                        result.transaction.category.charAt(0).toUpperCase() + result.transaction.category.slice(1);
+                    row.querySelector('.type-display').textContent = 
+                        result.transaction.type.charAt(0).toUpperCase() + result.transaction.type.slice(1);
+                    row.querySelector('.type-display').className = 
+                        `badge bg-${result.transaction.type === 'income' ? 'success' : 'danger'} type-display`;
+                    row.querySelector('.amount-display').textContent = 
+                        `${result.transaction.type === 'income' ? '+' : '-'}₹${parseFloat(result.transaction.amount).toFixed(2)}`;
+                    row.querySelector('.amount-display').className = 
+                        `amount-display text-${result.transaction.type === 'income' ? 'success' : 'danger'}`;
+                    row.querySelector('.date-display').textContent = result.transaction.display_date;
 
+                    toggleEditMode(row, false);
+                    showAlert('Transaction updated successfully', 'success');
+                } else {
+                    throw new Error(result.message || 'Unknown error occurred');
+                }
+            } catch (error) {
+                console.error('Error saving transaction:', error);
+                showAlert(`Error: ${error.message}`, 'danger');
+                toggleEditMode(row, false); 
+            } finally {
+                saveBtn.innerHTML = '<i class="bi bi-check"></i>';
+                saveBtn.disabled = false;
+            }
+        }
+        async function deleteTransaction(row) {
+            const transactionId = row.dataset.transactionId;
+            const deleteBtn = row.querySelector('.delete-btn');
+            const originalContent = deleteBtn.innerHTML;
+            try {
+                deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                deleteBtn.disabled = true;
+                const response = await fetch(`/transaction/${transactionId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        csrf_token: "{{ csrf_token() }}" 
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Failed to delete transaction');
+                }
+                row.remove();
+                showAlert('Transaction deleted successfully', 'success');
+            } catch (error) {
+                console.error('Error deleting transaction:', error);
+                showAlert(`Error: ${error.message}`, 'danger');
+            } finally {
+                deleteBtn.innerHTML = originalContent;
+                deleteBtn.disabled = false;
+            }
+        }
         function showAlert(message, type) {
+            document.querySelectorAll('.global-alert').forEach(el => el.remove());
             const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top mx-auto mt-3`;
+            alertDiv.className = `global-alert alert alert-${type} alert-dismissible fade show fixed-top mx-auto mt-3`;
             alertDiv.style.maxWidth = '500px';
             alertDiv.style.zIndex = '1100';
             alertDiv.role = 'alert';
@@ -276,33 +302,11 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             `;
-
             document.body.appendChild(alertDiv);
             setTimeout(() => {
                 const bsAlert = new bootstrap.Alert(alertDiv);
                 bsAlert.close();
             }, 5000);
-        }
-
-        function deleteTransaction(row) {
-            const transactionId = row.dataset.transactionId;
-
-            fetch(`/transaction/${transactionId}/delete`, {
-                method: 'POST',
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        row.remove();
-                        showAlert('Transaction deleted successfully', 'success');
-                    } else {
-                        showAlert('Error: ' + data.message, 'danger');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showAlert('An error occurred while deleting', 'danger');
-                });
         }
     });
 </script>
@@ -321,6 +325,13 @@
         top: 0;
         right: 0;
         left: 0;
+    }
+    .global-alert {
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from { transform: translateY(-100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
 </style>
 {% endblock %}
