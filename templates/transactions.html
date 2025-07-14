@@ -13,7 +13,7 @@
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
                 <form method="GET" action="{{ url_for('transactions') }}" class="d-flex flex-wrap gap-2">
                     <div class="d-flex">
-                        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 180px; padding-right: 30px;">
                             {% for m in range(1, 13) %}
                             <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
                                 {{ datetime(2020, m, 1).strftime('%B') }}

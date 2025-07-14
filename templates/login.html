@@ -17,9 +17,9 @@
                         {{ form.password.label(class="form-label") }}
                         {{ form.password(class="form-control", placeholder="Enter your password") }}
                     </div>
-                    <div class="mb-3 form-check">
-                        {{ form.remember(class="form-check-input") }}
-                        {{ form.remember.label(class="form-check-label") }}
+                    <div class="mb-3 custom-select-container">
+                        {{ form.remember(class="custom-select") }}
+                        {{ form.remember.label(class="form-label") }}
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Login</button>
@@ -32,4 +32,34 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block styles %}
+<style>
+    .custom-select-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+    .custom-select {
+        padding: 0.4rem 0.75rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: #fff;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23666' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 10px 6px;
+        min-width: 80px;
+    }
+    .form-label {
+        margin: 0;
+        cursor: pointer;
+    }
+</style>
 {% endblock %}
