@@ -10,6 +10,3 @@ importlib_metadata
 python-dotenv
 email_validator
 gunicorn
-singlestoredb
-sqlalchemy
-pymysql

@@ -1,11 +1,11 @@
-modules = ["python-base-3.13"]
 run = "python3 app.py"
-[nix]
-channel = "stable-24_05"
+modules = ["python-base-3.13"]
 
 [deployment]
-run = ["sh", "-c", "python3 app.py"]
+run = ["sh", "-c", "python3 app.py"] # Production-ready
 
 [[ports]]
 localPort = 5000
-externalPort = 80
+externalPort = 3000
+
+[nix]

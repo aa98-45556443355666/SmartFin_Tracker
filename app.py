@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, flash, request, abort, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -7,18 +8,21 @@ from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
+import datetime as dt_module
 import os
 from dotenv import load_dotenv
-from database import db, init_db
 
 load_dotenv()
 
 app = Flask(__name__)
 csrf = CSRFProtect(app)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+  'DATABASE_URL', 'sqlite:///finance.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-init_db(app)
-
+db = SQLAlchemy(app)
+Bootstrap(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -49,7 +53,6 @@ class Goal(db.Model):
     target_date = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# --- FORMS ---
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -83,7 +86,7 @@ class GoalForm(FlaskForm):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
+  
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -94,6 +97,16 @@ def dashboard():
     selected_month = request.args.get('month', datetime.now().month, type=int)
     selected_year = request.args.get('year', datetime.now().year, type=int)
 
+    available_months = db.session.query(
+        db.extract('month', Transaction.date).label('month'),
+        db.extract('year', Transaction.date).label('year')
+    ).filter(
+        Transaction.user_id == current_user.id
+    ).distinct().order_by(
+        db.extract('year', Transaction.date).desc(),
+        db.extract('month', Transaction.date).desc()
+    ).all()
+
     transactions = Transaction.query.filter(
         Transaction.user_id == current_user.id,
         db.extract('month', Transaction.date) == selected_month,
@@ -101,7 +114,7 @@ def dashboard():
     ).order_by(Transaction.date.desc()).limit(5).all()
 
     goals = Goal.query.filter_by(user_id=current_user.id).all()
-
+  
     income = db.session.query(db.func.sum(Transaction.amount)).filter(
         Transaction.user_id == current_user.id,
         Transaction.type == 'income',
@@ -146,6 +159,9 @@ def dashboard():
                          transactions=transactions, 
                          goals=goals, 
                          chart_data=chart_data,
+                         available_months=available_months,
+                         current_month=selected_month,
+                         current_year=selected_year,
                          datetime=datetime)
 
 @app.route('/transactions')
@@ -175,12 +191,23 @@ def transactions():
 
     transactions = query.order_by(Transaction.date.desc()).all()
 
+    available_months = db.session.query(
+        db.extract('month', Transaction.date).label('month'),
+        db.extract('year', Transaction.date).label('year')
+    ).filter(
+        Transaction.user_id == current_user.id
+    ).distinct().order_by(
+        db.extract('year', Transaction.date).desc(),
+        db.extract('month', Transaction.date).desc()
+    ).all()
+
     return render_template('transactions.html', 
                          transactions=transactions,
                          selected_type=transaction_type,
                          search_query=search_query,
                          selected_month=month_filter,
                          selected_year=year_filter,
+                         available_months=available_months,
                          datetime=datetime)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -308,7 +335,7 @@ def edit_transaction(transaction_id):
     data = request.form
     transaction.description = data.get('description', transaction.description)
     transaction.category = data.get('category', transaction.category)
-
+    
     try:
       amount = float(data.get('amount', transaction.amount))
       if amount <= 0:
@@ -319,7 +346,7 @@ def edit_transaction(transaction_id):
           'success': False,
           'message': 'Invalid amount: ' + str(e)
       }), 400
-
+      
     try:
       date_str = data.get('date')
       if date_str:
@@ -475,6 +502,9 @@ def delete_goal(goal_id):
     app.logger.error(f"Error deleting goal: {str(e)}")
 
   return redirect(url_for('goals'))
+
+with app.app_context():
+  db.create_all()
 
 if __name__=='__main__':
   app.run(host='0.0.0.0',port=5000, debug=True)
