@@ -10,17 +10,20 @@
         <div class="card h-100">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <span class="goal-name-display">{{ goal.name }}</span>
-                    <input type="text" class="form-control form-control-sm goal-name-edit" value="{{ goal.name }}" style="display: none; width: auto;">
+                    <span class="goal-name-display">{{ goal['name'] }}</span>
+                    <input type="text" class="form-control form-control-sm goal-name-edit" value="{{ goal['name'] }}"
+                        style="display: none; width: auto;">
                 </h5>
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary edit-goal-btn" data-goal-id="{{ goal.id }}">
+                    <button class="btn btn-outline-secondary edit-goal-btn" data-goal-id="{{ goal['id'] }}">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-outline-success save-goal-btn" data-goal-id="{{ goal.id }}" style="display: none;">
+                    <button class="btn btn-outline-success save-goal-btn" data-goal-id="{{ goal['id'] }}"
+                        style="display: none;">
                         <i class="bi bi-check"></i>
                     </button>
-                    <button class="btn btn-outline-danger cancel-edit-btn" data-goal-id="{{ goal.id }}" style="display: none;">
+                    <button class="btn btn-outline-danger cancel-edit-btn" data-goal-id="{{ goal['id'] }}"
+                        style="display: none;">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -30,52 +33,56 @@
                     <div class="mb-2 mb-md-0">
                         <span class="text-muted small">Target:</span>
                         <h4 class="mb-0">
-                            <span class="goal-target-display">₹{{ goal.target_amount }}</span>
-                            <input type="number" step="0.01" min="0.01" class="form-control form-control-sm goal-target-edit" 
-                                   value="{{ goal.target_amount }}" style="display: none; width: 120px;">
+                            <span class="goal-target-display">₹{{ goal['target_amount'] }}</span>
+                            <input type="number" step="0.01" min="0.01"
+                                class="form-control form-control-sm goal-target-edit"
+                                value="{{ goal['target_amount'] }}" style="display: none; width: 120px;">
                         </h4>
                     </div>
                     <div class="text-md-end">
                         <span class="text-muted small">Current:</span>
                         <h4 class="mb-0">
-                            <span class="goal-current-display">₹{{ goal.current_amount }}</span>
-                            <input type="number" step="0.01" min="0" class="form-control form-control-sm goal-current-edit" 
-                                   value="{{ goal.current_amount }}" style="display: none; width: 120px;">
+                            <span class="goal-current-display">₹{{ goal['current_amount'] }}</span>
+                            <input type="number" step="0.01" min="0"
+                                class="form-control form-control-sm goal-current-edit"
+                                value="{{ goal['current_amount'] }}" style="display: none; width: 120px;">
                         </h4>
                     </div>
                 </div>
                 <div class="progress mb-3" style="height: 15px;">
-                    <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%"
-                        aria-valuenow="{{ goal.current_amount }}" aria-valuemin="0"
-                        aria-valuemax="{{ goal.target_amount }}">
+                    <div class="progress-bar" role="progressbar" style="width: {{ goal['progress'] }}%"
+                        aria-valuenow="{{ goal['current_amount'] }}" aria-valuemin="0"
+                        aria-valuemax="{{ goal['target_amount'] }}">
                     </div>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted small">Progress</span>
-                    <span class="fw-bold">{{ ((goal.current_amount / goal.target_amount) * 100)|round(1) }}%</span>
+                    <span class="fw-bold">{{ ((goal['current_amount'] / goal['target_amount']) * 100)|round(1)
+                        }}%</span>
                 </div>
                 <div class="d-flex justify-content-between">
                     <span class="text-muted small">Target Date</span>
                     <span class="fw-bold">
-                        <span class="goal-date-display">{{ goal.target_date.strftime('%b %d, %Y') }}</span>
-                        <input type="date" class="form-control form-control-sm goal-date-edit" 
-                               value="{{ goal.target_date.strftime('%Y-%m-%d') }}" style="display: none; width: auto;">
+                        <span class="goal-date-display">{{ goal['target_date'].strftime('%b %d, %Y') }}</span>
+                        <input type="date" class="form-control form-control-sm goal-date-edit"
+                            value="{{ goal['target_date'].strftime('%Y-%m-%d') }}" style="display: none; width: auto;">
                     </span>
                 </div>
             </div>
             <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-end gap-2">
-                <form method="POST" action="{{ url_for('add_funds', goal_id=goal.id) }}" class="d-flex me-md-2 w-100 w-md-auto">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <form method="POST" action="{{ url_for('add_funds', goal_id=goal['id']) }}"
+                    class="d-flex me-md-2 w-100 w-md-auto">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <div class="input-group input-group-sm flex-grow-1">
                         <span class="input-group-text">₹</span>
                         <input type="number" step="0.01" min="0.01" class="form-control" name="amount"
-                               placeholder="Amount" required>
+                            placeholder="Amount" required>
                     </div>
                     <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Add</button>
                 </form>
-                <form method="POST" action="{{ url_for('delete_goal', goal_id=goal.id) }}"
-                      onsubmit="return confirm('Are you sure you want to delete this goal?');" class="w-100 w-md-auto">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <form method="POST" action="{{ url_for('delete_goal_route', goal_id=goal['id']) }}"
+                    onsubmit="return confirm('Are you sure you want to delete this goal?');" class="w-100 w-md-auto">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <button type="submit" class="btn btn-sm btn-outline-danger w-100">Delete</button>
                 </form>
             </div>
@@ -97,131 +104,131 @@
 {% endblock %}
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.edit-goal-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const goalCard = this.closest('.card');
-            enableEditMode(goalCard);
-        });
-    });
-    document.querySelectorAll('.save-goal-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const goalCard = this.closest('.card');
-            saveGoalChanges(goalCard);
-        });
-    });
-    document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const goalCard = this.closest('.card');
-            disableEditMode(goalCard);
-        });
-    });
-    function enableEditMode(goalCard) {
-        goalCard.querySelector('.goal-name-display').style.display = 'none';
-        goalCard.querySelector('.goal-name-edit').style.display = 'inline-block';
-        goalCard.querySelector('.goal-target-display').style.display = 'none';
-        goalCard.querySelector('.goal-target-edit').style.display = 'inline-block';
-        goalCard.querySelector('.goal-current-display').style.display = 'none';
-        goalCard.querySelector('.goal-current-edit').style.display = 'inline-block';
-        goalCard.querySelector('.goal-date-display').style.display = 'none';
-        goalCard.querySelector('.goal-date-edit').style.display = 'inline-block';
-        goalCard.querySelector('.edit-goal-btn').style.display = 'none';
-        goalCard.querySelector('.save-goal-btn').style.display = 'inline-block';
-        goalCard.querySelector('.cancel-edit-btn').style.display = 'inline-block';
-    }
-    function disableEditMode(goalCard) {
-        goalCard.querySelector('.goal-name-display').style.display = 'inline-block';
-        goalCard.querySelector('.goal-name-edit').style.display = 'none';
-        goalCard.querySelector('.goal-target-display').style.display = 'inline-block';
-        goalCard.querySelector('.goal-target-edit').style.display = 'none';
-        goalCard.querySelector('.goal-current-display').style.display = 'inline-block';
-        goalCard.querySelector('.goal-current-edit').style.display = 'none';
-        goalCard.querySelector('.goal-date-display').style.display = 'inline-block';
-        goalCard.querySelector('.goal-date-edit').style.display = 'none';
-        goalCard.querySelector('.edit-goal-btn').style.display = 'inline-block';
-        goalCard.querySelector('.save-goal-btn').style.display = 'none';
-        goalCard.querySelector('.cancel-edit-btn').style.display = 'none';
-    }
-    async function saveGoalChanges(goalCard) {
-        const goalId = goalCard.querySelector('.edit-goal-btn').getAttribute('data-goal-id');
-        const name = goalCard.querySelector('.goal-name-edit').value;
-        const targetAmount = parseFloat(goalCard.querySelector('.goal-target-edit').value);
-        const currentAmount = parseFloat(goalCard.querySelector('.goal-current-edit').value);
-        const targetDate = goalCard.querySelector('.goal-date-edit').value;
-        const saveBtn = goalCard.querySelector('.save-goal-btn');
-        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-        saveBtn.disabled = true;
-        try {
-            const response = await fetch(`/goal/${goalId}/edit`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    name: name,
-                    target_amount: targetAmount,
-                    current_amount: currentAmount,
-                    target_date: targetDate
-                })
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.edit-goal-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const goalCard = this.closest('.card');
+                enableEditMode(goalCard);
             });
-            const result = await response.json();
-            if (response.ok && result.success) {
-                goalCard.querySelector('.goal-name-display').textContent = name;
-                goalCard.querySelector('.goal-target-display').textContent = '₹' + targetAmount;
-                goalCard.querySelector('.goal-current-display').textContent = '₹' + currentAmount;      
-                const date = new Date(targetDate);
-                goalCard.querySelector('.goal-date-display').textContent = date.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
+        });
+        document.querySelectorAll('.save-goal-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const goalCard = this.closest('.card');
+                saveGoalChanges(goalCard);
+            });
+        });
+        document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const goalCard = this.closest('.card');
+                disableEditMode(goalCard);
+            });
+        });
+        function enableEditMode(goalCard) {
+            goalCard.querySelector('.goal-name-display').style.display = 'none';
+            goalCard.querySelector('.goal-name-edit').style.display = 'inline-block';
+            goalCard.querySelector('.goal-target-display').style.display = 'none';
+            goalCard.querySelector('.goal-target-edit').style.display = 'inline-block';
+            goalCard.querySelector('.goal-current-display').style.display = 'none';
+            goalCard.querySelector('.goal-current-edit').style.display = 'inline-block';
+            goalCard.querySelector('.goal-date-display').style.display = 'none';
+            goalCard.querySelector('.goal-date-edit').style.display = 'inline-block';
+            goalCard.querySelector('.edit-goal-btn').style.display = 'none';
+            goalCard.querySelector('.save-goal-btn').style.display = 'inline-block';
+            goalCard.querySelector('.cancel-edit-btn').style.display = 'inline-block';
+        }
+        function disableEditMode(goalCard) {
+            goalCard.querySelector('.goal-name-display').style.display = 'inline-block';
+            goalCard.querySelector('.goal-name-edit').style.display = 'none';
+            goalCard.querySelector('.goal-target-display').style.display = 'inline-block';
+            goalCard.querySelector('.goal-target-edit').style.display = 'none';
+            goalCard.querySelector('.goal-current-display').style.display = 'inline-block';
+            goalCard.querySelector('.goal-current-edit').style.display = 'none';
+            goalCard.querySelector('.goal-date-display').style.display = 'inline-block';
+            goalCard.querySelector('.goal-date-edit').style.display = 'none';
+            goalCard.querySelector('.edit-goal-btn').style.display = 'inline-block';
+            goalCard.querySelector('.save-goal-btn').style.display = 'none';
+            goalCard.querySelector('.cancel-edit-btn').style.display = 'none';
+        }
+        async function saveGoalChanges(goalCard) {
+            const goalId = goalCard.querySelector('.edit-goal-btn').getAttribute('data-goal-id');
+            const name = goalCard.querySelector('.goal-name-edit').value;
+            const targetAmount = parseFloat(goalCard.querySelector('.goal-target-edit').value);
+            const currentAmount = parseFloat(goalCard.querySelector('.goal-current-edit').value);
+            const targetDate = goalCard.querySelector('.goal-date-edit').value;
+            const saveBtn = goalCard.querySelector('.save-goal-btn');
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            saveBtn.disabled = true;
+            try {
+                const response = await fetch(`/goal/${goalId}/edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        target_amount: targetAmount,
+                        current_amount: currentAmount,
+                        target_date: targetDate
+                    })
                 });
-                const progressBar = goalCard.querySelector('.progress-bar');
-                if (progressBar) {
-                    const progress = (currentAmount / targetAmount) * 100;
-                    progressBar.style.width = `${progress}%`;
-                    progressBar.setAttribute('aria-valuenow', currentAmount);
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    goalCard.querySelector('.goal-name-display').textContent = name;
+                    goalCard.querySelector('.goal-target-display').textContent = '₹' + targetAmount;
+                    goalCard.querySelector('.goal-current-display').textContent = '₹' + currentAmount;
+                    const date = new Date(targetDate);
+                    goalCard.querySelector('.goal-date-display').textContent = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    const progressBar = goalCard.querySelector('.progress-bar');
+                    if (progressBar) {
+                        const progress = (currentAmount / targetAmount) * 100;
+                        progressBar.style.width = `${progress}%`;
+                        progressBar.setAttribute('aria-valuenow', currentAmount);
+                    }
+                    const progressText = goalCard.querySelectorAll('.d-flex.justify-content-between.mb-2 span.fw-bold')[0];
+                    if (progressText) {
+                        progressText.textContent = ((currentAmount / targetAmount) * 100).toFixed(1) + '%';
+                    }
+                    disableEditMode(goalCard);
+                    showFlashMessage('Goal updated successfully!', 'success');
+                } else {
+                    throw new Error(result.message || 'Error updating goal');
                 }
-                const progressText = goalCard.querySelectorAll('.d-flex.justify-content-between.mb-2 span.fw-bold')[0];
-                if (progressText) {
-                    progressText.textContent = ((currentAmount / targetAmount) * 100).toFixed(1) + '%';
-                }
-                disableEditMode(goalCard);     
-                showFlashMessage('Goal updated successfully!', 'success');
-            } else {
-                throw new Error(result.message || 'Error updating goal');
+            } catch (error) {
+                console.error('Error:', error);
+                showFlashMessage(error.message || 'Error updating goal', 'danger');
+            } finally {
+                saveBtn.innerHTML = '<i class="bi bi-check"></i>';
+                saveBtn.disabled = false;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showFlashMessage(error.message || 'Error updating goal', 'danger');
-        } finally {
-            saveBtn.innerHTML = '<i class="bi bi-check"></i>';
-            saveBtn.disabled = false;
         }
-    }
-    function showFlashMessage(message, type) {
-        let flashContainer = document.getElementById('flash-messages');
-        if (!flashContainer) {
-            flashContainer = document.createElement('div');
-            flashContainer.id = 'flash-messages';
-            flashContainer.style.position = 'fixed';
-            flashContainer.style.top = '120px';
-            flashContainer.style.right = '20px';
-            flashContainer.style.zIndex = '1000';
-            document.body.appendChild(flashContainer);
-        }
-        const messageElement = document.createElement('div');
-        messageElement.className = `alert alert-${type} alert-dismissible fade show`;
-        messageElement.style.maxWidth = '300px';
-        messageElement.innerHTML = `
+        function showFlashMessage(message, type) {
+            let flashContainer = document.getElementById('flash-messages');
+            if (!flashContainer) {
+                flashContainer = document.createElement('div');
+                flashContainer.id = 'flash-messages';
+                flashContainer.style.position = 'fixed';
+                flashContainer.style.top = '120px';
+                flashContainer.style.right = '20px';
+                flashContainer.style.zIndex = '1000';
+                document.body.appendChild(flashContainer);
+            }
+            const messageElement = document.createElement('div');
+            messageElement.className = `alert alert-${type} alert-dismissible fade show`;
+            messageElement.style.maxWidth = '300px';
+            messageElement.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
-        flashContainer.appendChild(messageElement);
-        setTimeout(() => {
-            messageElement.remove();
-        }, 5000);
-    }
-});
+            flashContainer.appendChild(messageElement);
+            setTimeout(() => {
+                messageElement.remove();
+            }, 5000);
+        }
+    });
 </script>
 {% endblock %}

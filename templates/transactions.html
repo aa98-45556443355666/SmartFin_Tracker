@@ -13,16 +13,17 @@
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
                 <form method="GET" action="{{ url_for('transactions') }}" class="d-flex flex-wrap gap-2">
                     <div class="d-flex">
-                        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 180px; padding-right: 30px;">
+                        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()"
+                            style="width: 180px; padding-right: 30px;">
                             {% for m in range(1, 13) %}
-                            <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                            <option value="{{ m }}" {% if m==selected_month %}selected{% endif %}>
                                 {{ datetime(2020, m, 1).strftime('%B') }}
                             </option>
                             {% endfor %}
                         </select>
                         <select name="year" class="form-select form-select-sm ms-2" onchange="this.form.submit()">
                             {% for y in range(datetime.now().year, datetime.now().year - 5, -1) %}
-                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                            <option value="{{ y }}" {% if y==selected_year %}selected{% endif %}>{{ y }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -33,9 +34,9 @@
                     <input type="hidden" name="month" value="{{ selected_month }}">
                     <input type="hidden" name="year" value="{{ selected_year }}">
                     <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="all" {% if selected_type == 'all' %}selected{% endif %}>All Types</option>
-                        <option value="income" {% if selected_type == 'income' %}selected{% endif %}>Income</option>
-                        <option value="expense" {% if selected_type == 'expense' %}selected{% endif %}>Expense</option>
+                        <option value="all" {% if selected_type=='all' %}selected{% endif %}>All Types</option>
+                        <option value="income" {% if selected_type=='income' %}selected{% endif %}>Income</option>
+                        <option value="expense" {% if selected_type=='expense' %}selected{% endif %}>Expense</option>
                     </select>
                     <div class="input-group input-group-sm">
                         <input type="text" name="search" class="form-control" placeholder="Search..."
@@ -44,7 +45,8 @@
                             <i class="bi bi-search"></i>
                         </button>
                         {% if selected_type != 'all' or search_query %}
-                        <a href="{{ url_for('transactions', month=selected_month, year=selected_year) }}" class="btn btn-outline-danger" type="button">
+                        <a href="{{ url_for('transactions', month=selected_month, year=selected_year) }}"
+                            class="btn btn-outline-danger" type="button">
                             <i class="bi bi-x-lg"></i>
                         </a>
                         {% endif %}
@@ -72,16 +74,17 @@
                 </thead>
                 <tbody>
                     {% for transaction in transactions %}
-                    <tr data-transaction-id="{{ transaction.id }}">
+                    <tr data-transaction-id="{{ transaction['id'] }}">
                         <td>
                             <input type="date" class="form-control form-control-sm date-input"
-                                value="{{ transaction.date.strftime('%Y-%m-%d') }}" style="display: none;">
-                            <span class="date-display">{{ transaction.date.strftime('%b %d, %Y') }}</span>
+                                value="{{ transaction['date'].strftime('%Y-%m-%d') }}" style="display: none;">
+                            <span class="date-display">{{ transaction['date'].strftime('%b %d, %Y') }}</span>
                         </td>
                         <td>
                             <input type="text" class="form-control form-control-sm description-input"
-                                value="{{ transaction.description or '' }}" style="display: none;">
-                            <span class="description-display">{{ transaction.description or 'No description' }}</span>
+                                value="{{ transaction['description'] or '' }}" style="display: none;">
+                            <span class="description-display">{{ transaction['description'] or 'No description'
+                                }}</span>
                         </td>
                         <td>
                             <select class="form-select form-select-sm category-input" style="display: none;">
@@ -89,37 +92,40 @@
                                 'housing', 'transportation', 'food', 'utilities',
                                 'healthcare', 'entertainment', 'shopping',
                                 'education', 'other_expense'] %}
-                                <option value="{{ cat }}" {% if cat == transaction.category %}selected{% endif %}>
+                                <option value="{{ cat }}" {% if cat==transaction['category'] %}selected{% endif %}>
                                     {{ cat|capitalize }}
                                 </option>
                                 {% endfor %}
                             </select>
-                            <span class="category-display">{{ transaction.category|capitalize }}</span>
+                            <span class="category-display">{{ transaction['category']|capitalize }}</span>
                         </td>
-                        <td style="min-width: 110px;">  
-                            <select class="form-select form-select-sm type-input" 
-                                    style="display: none; 
+                        <td style="min-width: 110px;">
+                            <select class="form-select form-select-sm type-input" style="display: none; 
                                            width: 110px; 
                                            padding: 0.25rem 0.5rem;
                                            height: 28px;
                                            line-height: 1.5;">
-                                <option value="income" {% if transaction.type=='income' %}selected{% endif %}>Income</option>
-                                <option value="expense" {% if transaction.type=='expense' %}selected{% endif %}>Expense</option>
+                                <option value="income" {% if transaction['type']=='income' %}selected{% endif %}>Income
+                                </option>
+                                <option value="expense" {% if transaction['type']=='expense' %}selected{% endif %}>
+                                    Expense
+                                </option>
                             </select>
-                            <span class="badge type-display d-inline-flex align-items-center justify-content-center" 
-                                  style="width: 110px; 
+                            <span class="badge type-display d-inline-flex align-items-center justify-content-center"
+                                style="width: 110px; 
                                          height: 28px;
                                          padding: 0.25rem 0.5rem;
-                                         background-color: {{ 'var(--bs-success)' if transaction.type == 'income' else 'var(--bs-danger)' }};
+                                         background-color: {{ 'var(--bs-success)' if transaction['type'] == 'income' else 'var(--bs-danger)' }};
                                          color: white;">
-                                {{ transaction.type|capitalize }}
+                                {{ transaction['type']|capitalize }}
                             </span>
                         </td>
                         <td class="text-end">
                             <input type="number" step="0.01" class="form-control form-control-sm amount-input"
-                                value="{{ transaction.amount }}" style="display: none;">
-                            <span class="amount-display {{ 'text-success' if transaction.type == 'income' else 'text-danger' }}">
-                                {{ '+' if transaction.type == 'income' else '-' }}₹{{ transaction.amount }}
+                                value="{{ transaction['amount'] }}" style="display: none;">
+                            <span
+                                class="amount-display {{ 'text-success' if transaction['type'] == 'income' else 'text-danger' }}">
+                                {{ '+' if transaction['type'] == 'income' else '-' }}₹{{ transaction['amount'] }}
                             </span>
                         </td>
                         <td>
@@ -208,7 +214,7 @@
                 amount: row.querySelector('.amount-input').value,
                 date: row.querySelector('.date-input').value,
                 type: row.querySelector('.type-input').value,
-                csrf_token: "{{ csrf_token() }}" 
+                csrf_token: "{{ csrf_token() }}"
             };
             const saveBtn = row.querySelector('.save-btn');
             saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
@@ -234,17 +240,17 @@
                     throw new Error(result.message || 'Failed to save transaction');
                 }
                 if (result.success) {
-                    row.querySelector('.description-display').textContent = 
+                    row.querySelector('.description-display').textContent =
                         result.transaction.description || 'No description';
-                    row.querySelector('.category-display').textContent = 
+                    row.querySelector('.category-display').textContent =
                         result.transaction.category.charAt(0).toUpperCase() + result.transaction.category.slice(1);
-                    row.querySelector('.type-display').textContent = 
+                    row.querySelector('.type-display').textContent =
                         result.transaction.type.charAt(0).toUpperCase() + result.transaction.type.slice(1);
-                    row.querySelector('.type-display').className = 
+                    row.querySelector('.type-display').className =
                         `badge bg-${result.transaction.type === 'income' ? 'success' : 'danger'} type-display`;
-                    row.querySelector('.amount-display').textContent = 
+                    row.querySelector('.amount-display').textContent =
                         `${result.transaction.type === 'income' ? '+' : '-'}₹${parseFloat(result.transaction.amount).toFixed(2)}`;
-                    row.querySelector('.amount-display').className = 
+                    row.querySelector('.amount-display').className =
                         `amount-display text-${result.transaction.type === 'income' ? 'success' : 'danger'}`;
                     row.querySelector('.date-display').textContent = result.transaction.display_date;
                     toggleEditMode(row, false);
@@ -274,7 +280,7 @@
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
                     body: new URLSearchParams({
-                        csrf_token: "{{ csrf_token() }}" 
+                        csrf_token: "{{ csrf_token() }}"
                     })
                 });
                 const result = await response.json();
@@ -315,24 +321,35 @@
 {% endblock %}
 {% block styles %}
 <style>
-    .type-input, .type-display {
+    .type-input,
+    .type-display {
         box-sizing: border-box;
         font-size: 0.875rem;
         font-family: inherit;
         border-radius: 0.25rem;
     }
+
     .fixed-top {
         position: fixed;
         top: 0;
         right: 0;
         left: 0;
     }
+
     .global-alert {
         animation: slideIn 0.3s ease-out;
     }
+
     @keyframes slideIn {
-        from { transform: translateY(-100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 
     @media (max-width: 768px) {
@@ -349,7 +366,8 @@
             flex-wrap: nowrap;
         }
 
-        .form-select, .form-control {
+        .form-select,
+        .form-control {
             font-size: 0.875rem;
         }
     }
@@ -359,7 +377,8 @@
             padding: 0.75rem;
         }
 
-        .table th, .table td {
+        .table th,
+        .table td {
             padding: 0.5rem;
         }
 
