@@ -159,196 +159,205 @@
 <script>
     let incomeExpenseChart;
     let expenseCategoryChart;
+
     document.addEventListener('DOMContentLoaded', function () {
         initIncomeExpenseChart();
         initExpenseCategoryChart();
     });
+
     function initIncomeExpenseChart() {
         const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
         incomeExpenseChart = new Chart(incomeExpenseCtx, {
             type: 'bar',
             data: {
-                labels: ['Income', 'Expenses'],
+                labels: [''], // We only need one label on the x-axis for both bars
                 datasets: [{
-                    label: 'Amount (₹)',
-                    data: [{{ chart_data.income }}, {{ chart_data.expenses }}],
-            backgroundColor: [
-                'rgba(75, 192, 192, 0.7)',
-                'rgba(255, 99, 132, 0.7)'
-            ],
-            borderColor: [
-                'rgba(75, 192, 192, 1)',
-                'rgba(255, 99, 132, 1)'
-            ],
-            borderWidth: 1
-        }]
+                    label: 'Income',
+                    data: [{{ chart_data.income }}],
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Expenses',
+                    data: [{{ chart_data.expenses }}],
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
             },
-    options: {
-        responsive: true,
-            maintainAspectRatio: false,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
-            y: {
-                beginAtZero: true,
-                    ticks: {
-                    callback: function(value) {
-                        return '₹' + value;
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.raw;
+                            }
+                        }
                     }
                 }
             }
-        },
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': ₹' + context.raw;
-                    }
-                }
-            }
-        }
-    }
         });
     }
+
     function initExpenseCategoryChart() {
         const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
         expenseCategoryChart = new Chart(expenseCategoryCtx, {
             type: 'doughnut',
             data: {
                 labels: {{ chart_data.expense_categories.keys() | list | tojson }},
-    datasets: [{
-        label: 'Expenses by Category',
-        data: {{ chart_data.expense_categories.values() | list | tojson }},
-        backgroundColor: [
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(54, 162, 235, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(153, 102, 255, 0.7)',
-        'rgba(255, 159, 64, 0.7)',
-        'rgba(199, 199, 199, 0.7)'
-    ],
-        borderColor: [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 159, 64, 1)',
-        'rgba(199, 199, 199, 1)'
-    ],
-        borderWidth: 1
+                datasets: [{
+                    label: 'Expenses by Category',
+                    data: {{ chart_data.expense_categories.values() | list | tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(199, 199, 199, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)'
+                    ],
+                    borderWidth: 1
                 }]
             },
-    options: {
-        responsive: true,
-            maintainAspectRatio: false,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-            legend: {
-                position: 'right'
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.label + ': ₹' + context.raw;
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ₹' + context.raw;
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
         });
     }
+
     function changeChartType(type) {
-        incomeExpenseChart.destroy();
+        if (incomeExpenseChart) {
+            incomeExpenseChart.destroy();
+        }
         const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
         incomeExpenseChart = new Chart(incomeExpenseCtx, {
             type: type,
             data: {
-                labels: ['Income', 'Expenses'],
+                labels: [''], // Keep a single label
                 datasets: [{
-                    label: 'Amount (₹)',
-                    data: [{{ chart_data.income }}, {{ chart_data.expenses }}],
-            backgroundColor: [
-                'rgba(75, 192, 192, 0.7)',
-                'rgba(255, 99, 132, 0.7)'
-            ],
-            borderColor: [
-                'rgba(75, 192, 192, 1)',
-                'rgba(255, 99, 132, 1)'
-            ],
-            borderWidth: 1
-        }]
+                    label: 'Income',
+                    data: [{{ chart_data.income }}],
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Expenses',
+                    data: [{{ chart_data.expenses }}],
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
             },
-    options: {
-        responsive: true,
-            maintainAspectRatio: false,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
-            y: {
-                beginAtZero: true,
-                    ticks: {
-                    callback: function(value) {
-                        return '₹' + value;
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.raw;
+                            }
+                        }
                     }
                 }
             }
-        },
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': ₹' + context.raw;
-                    }
-                }
-            }
-        }
-    }
         });
     }
+
     function changePieChartType(type) {
-        expenseCategoryChart.destroy();
+        if (expenseCategoryChart) {
+            expenseCategoryChart.destroy();
+        }
         const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
         expenseCategoryChart = new Chart(expenseCategoryCtx, {
             type: type,
             data: {
                 labels: {{ chart_data.expense_categories.keys() | list | tojson }},
-    datasets: [{
-        label: 'Expenses by Category',
-        data: {{ chart_data.expense_categories.values() | list | tojson }},
-        backgroundColor: [
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(54, 162, 235, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(153, 102, 255, 0.7)',
-        'rgba(255, 159, 64, 0.7)',
-        'rgba(199, 199, 199, 0.7)'
-    ],
-        borderColor: [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 159, 64, 1)',
-        'rgba(199, 199, 199, 1)'
-    ],
-        borderWidth: 1
+                datasets: [{
+                    label: 'Expenses by Category',
+                    data: {{ chart_data.expense_categories.values() | list | tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(199, 199, 199, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)'
+                    ],
+                    borderWidth: 1
                 }]
             },
-    options: {
-        responsive: true,
-            maintainAspectRatio: false,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-            legend: {
-                position: 'right'
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.label + ': ₹' + context.raw;
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ₹' + context.raw;
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
         });
     }
 </script>
