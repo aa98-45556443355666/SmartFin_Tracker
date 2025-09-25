@@ -9,11 +9,11 @@ from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
 import os
 from dotenv import load_dotenv
-from database import (
+from database import (engine,
     get_user_by_email, add_user, get_user_by_id,
     get_transactions, add_transaction, update_transaction, delete_transaction, get_transaction_by_id,
     get_goals, add_goal, update_goal, delete_goal, get_goal_by_id, add_funds_to_goal,
-    get_income_expense_sum, get_expense_categories
+    get_income_expense_summary, get_expense_categories
 )
 
 load_dotenv()
@@ -103,16 +103,19 @@ def dashboard():
     selected_month = request.args.get('month', datetime.now().month, type=int)
     selected_year = request.args.get('year', datetime.now().year, type=int)
     user_id = current_user.id
-    transactions = get_transactions(
-        user_id, month=selected_month, year=selected_year, limit=5)
-    goals = get_goals(user_id)
-    income = get_income_expense_sum(
-        user_id, selected_month, selected_year, 'income')
-    expenses = get_income_expense_sum(
-        user_id, selected_month, selected_year, 'expense')
+
+    with engine.connect() as conn:
+        transactions = get_transactions(conn,
+            user_id, month=selected_month, year=selected_year, limit=5)
+        goals = get_goals(conn,user_id)
+        income,expenses = get_income_expense_summary(conn,
+            user_id, selected_month, selected_year)
+       
+        expense_categories = get_expense_categories(conn,
+            user_id, selected_month, selected_year)
+        
     balance = income - expenses
-    expense_categories = get_expense_categories(
-        user_id, selected_month, selected_year)
+    
     chart_data = {
         'income': income,
         'expenses': expenses,
@@ -137,8 +140,11 @@ def transactions():
     month_filter = request.args.get('month', datetime.now().month, type=int)
     year_filter = request.args.get('year', datetime.now().year, type=int)
     user_id = current_user.id
-    transactions = get_transactions(user_id, month=month_filter, year=year_filter,
-                                    type_filter=transaction_type if transaction_type != 'all' else None, search=search_query)
+
+    with engine.connect() as conn:
+        transactions = get_transactions(conn,user_id, month=month_filter, year=year_filter,
+                                        type_filter=transaction_type if transaction_type != 'all' else None, search=search_query)
+        
     return render_template('transactions.html',
                            transactions=transactions,
                            selected_type=transaction_type,
@@ -294,7 +300,9 @@ def delete_transaction_route(transaction_id):
 @app.route('/goals')
 @login_required
 def goals():
-    goals = get_goals(current_user.id)
+
+    with engine.connect() as conn:
+        goals = get_goals(conn,current_user.id)
     for goal in goals:
         try:
             progress = (goal['current_amount'] / goal['target_amount']

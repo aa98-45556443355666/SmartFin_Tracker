@@ -14,14 +14,17 @@ engine = create_engine(
             "ca": ca_bundle_path
         },
         "charset": "utf8mb4"
-    }
+    },
+    pool_recycle=3600
 )
 
+def _execute_query(conn,query,params):
+    return conn.execute(text(query), params)
 
 def get_user_by_email(email):
     with engine.connect() as conn:
-        res = conn.execute(
-            text("SELECT * FROM users WHERE email = :email"), {"email": email})
+        res = _execute_query(conn,
+            "SELECT * FROM users WHERE email = :email", {"email": email})
         row = res.fetchone()
         return row._asdict() if row else None
 
@@ -44,13 +47,13 @@ def add_user(name, email, password_hash):
 
 def get_user_by_id(user_id):
     with engine.connect() as conn:
-        res = conn.execute(
-            text("SELECT * FROM users WHERE id = :id"), {"id": user_id})
+        res = _execute_query(conn,
+            "SELECT * FROM users WHERE id = :id", {"id": user_id})
         row = res.fetchone()
         return row._asdict() if row else None
 
 
-def get_transactions(user_id, month=None, year=None, type_filter=None, search=None, limit=None):
+def get_transactions(conn, user_id, month=None, year=None, type_filter=None, search=None, limit=None):
     query = "SELECT * FROM transactions WHERE user_id = :user_id"
     params = {"user_id": user_id}
     if month:
@@ -69,9 +72,9 @@ def get_transactions(user_id, month=None, year=None, type_filter=None, search=No
     if limit:
         query += " LIMIT :limit"
         params["limit"] = limit
-    with engine.connect() as conn:
-        res = conn.execute(text(query), params)
-        return [row._asdict() for row in res.fetchall()]
+    
+    res = _execute_query(conn,query, params)
+    return [row._asdict() for row in res.fetchall()]
 
 
 def add_transaction(user_id, amount, type_, category, description, date):
@@ -121,11 +124,11 @@ def delete_transaction(transaction_id, user_id):
             return False
 
 
-def get_goals(user_id):
-    with engine.connect() as conn:
-        res = conn.execute(
-            text("SELECT * FROM goals WHERE user_id = :user_id"), {"user_id": user_id})
-        return [row._asdict() for row in res.fetchall()]
+def get_goals(conn,user_id):
+   
+    res = _execute_query(conn,
+            "SELECT * FROM goals WHERE user_id = :user_id", {"user_id": user_id})
+    return [row._asdict() for row in res.fetchall()]
 
 
 def add_goal(user_id, name, target_amount, current_amount, target_date):
@@ -207,20 +210,26 @@ def get_transaction_by_id(transaction_id, user_id):
         return row._asdict() if row else None
 
 
-def get_income_expense_sum(user_id, month, year, type_):
-    with engine.connect() as conn:
-        res = conn.execute(
-            text("SELECT SUM(amount) FROM transactions WHERE user_id=:user_id AND type=:type AND MONTH(date)=:month AND YEAR(date)=:year"),
-            {"user_id": user_id, "type": type_, "month": month, "year": year}
-        )
-        total = res.scalar()
-        return total or 0
+def get_income_expense_summary(conn, user_id, month, year):
+    query = """
+        SELECT
+            SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income,
+            SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expenses
+        FROM transactions
+        WHERE user_id = :user_id AND MONTH(date) = :month AND YEAR(date) = :year
+    """
+    params = {"user_id": user_id, "month": month, "year": year}
+    res = _execute_query(conn, query, params)
+    summary = res.fetchone()
+    return (summary.income or 0, summary.expenses or 0)
 
-
-def get_expense_categories(user_id, month, year):
-    with engine.connect() as conn:
-        res = conn.execute(
-            text("SELECT category, SUM(amount) as total FROM transactions WHERE user_id=:user_id AND type='expense' AND MONTH(date)=:month AND YEAR(date)=:year GROUP BY category"),
-            {"user_id": user_id, "month": month, "year": year}
-        )
-        return {row[0]: row[1] for row in res.fetchall()}
+def get_expense_categories(conn, user_id, month, year):
+    query = """
+        SELECT category, SUM(amount) as total 
+        FROM transactions 
+        WHERE user_id=:user_id AND type='expense' AND MONTH(date)=:month AND YEAR(date)=:year 
+        GROUP BY category
+    """
+    params = {"user_id": user_id, "month": month, "year": year}
+    res = _execute_query(conn, query, params)
+    return {row[0]: row[1] for row in res.fetchall()}
