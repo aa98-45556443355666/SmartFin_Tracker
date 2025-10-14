@@ -13,3 +13,4 @@ gunicorn
 singlestoredb
 sqlalchemy
 pymysql
+pytz

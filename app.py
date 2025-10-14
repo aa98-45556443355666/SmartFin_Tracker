@@ -6,6 +6,7 @@ from wtforms import StringField, PasswordField, FloatField, SelectField, TextAre
 from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import pytz
 from flask_wtf.csrf import CSRFProtect
 import os
 from dotenv import load_dotenv
@@ -26,6 +27,7 @@ Bootstrap(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+IST = pytz.timezone('Asia/Kolkata') 
 
 class User(UserMixin):
     def __init__(self, user_dict):
@@ -55,7 +57,7 @@ class TransactionForm(FlaskForm):
         ('other_expense', 'Other Expense')
     ], validators=[DataRequired()])
     description = TextAreaField('Description')
-    date = DateField('Date', default=datetime.utcnow,
+    date = DateField('Date', default=lambda: datetime.now(IST),
                      validators=[DataRequired()])
 
 
@@ -100,8 +102,8 @@ def home():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    selected_month = request.args.get('month', datetime.now().month, type=int)
-    selected_year = request.args.get('year', datetime.now().year, type=int)
+    selected_month = request.args.get('month', datetime.now(IST).month, type=int)
+    selected_year = request.args.get('year', datetime.now(IST).year, type=int)
     user_id = current_user.id
 
     with engine.connect() as conn:
@@ -129,7 +131,8 @@ def dashboard():
                            transactions=transactions,
                            goals=goals,
                            chart_data=chart_data,
-                           datetime=datetime)
+                           datetime=datetime,
+                          IST=IST)
 
 
 @app.route('/transactions')
@@ -137,8 +140,8 @@ def dashboard():
 def transactions():
     transaction_type = request.args.get('type', 'all')
     search_query = request.args.get('search', '').strip().lower()
-    month_filter = request.args.get('month', datetime.now().month, type=int)
-    year_filter = request.args.get('year', datetime.now().year, type=int)
+    month_filter = request.args.get('month', datetime.now(IST).month, type=int)
+    year_filter = request.args.get('year', datetime.now(IST).year, type=int)
     user_id = current_user.id
 
     with engine.connect() as conn:
@@ -151,7 +154,8 @@ def transactions():
                            search_query=search_query,
                            selected_month=month_filter,
                            selected_year=year_filter,
-                           datetime=datetime)
+                           datetime=datetime,
+                          IST=IST)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -333,7 +337,7 @@ def edit_goal(goal_id):
         try:
             target_date = datetime.strptime(
                 data['target_date'], '%Y-%m-%d').date()
-            if target_date < datetime.now().date():
+            if target_date < datetime.now(IST).date():
                 return jsonify({'success': False, 'message': 'Target date cannot be in the past'}), 400
         except ValueError:
             return jsonify({'success': False, 'message': 'Invalid date format'}), 400

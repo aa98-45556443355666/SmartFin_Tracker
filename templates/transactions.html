@@ -22,7 +22,7 @@
                             {% endfor %}
                         </select>
                         <select name="year" class="form-select form-select-sm ms-2" onchange="this.form.submit()">
-                            {% for y in range(datetime.now().year, datetime.now().year - 5, -1) %}
+                            {% for y in range(datetime.now(IST).year, datetime.now(IST).year - 5, -1) %}
                             <option value="{{ y }}" {% if y==selected_year %}selected{% endif %}>{{ y }}</option>
                             {% endfor %}
                         </select>
