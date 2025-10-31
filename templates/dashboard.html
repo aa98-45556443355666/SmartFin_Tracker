@@ -251,7 +251,21 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return context.label + ': ₹' + context.raw;
+                                let label = context.label || '';
+                                let currentValue = context.raw;
+        
+                               
+                                let dataArr = context.chart.data.datasets[0].data;
+        
+                                let total = dataArr.reduce((sum, value) => sum + value, 0);
+        
+                                let percentage = 0;
+                                if (total > 0) {
+                                    percentage = (currentValue / total) * 100;
+                                }
+        
+                                return `${label}: ₹${currentValue} (${percentage.toFixed(1)}%)`;
+                        
                             }
                         }
                     }
