@@ -8,7 +8,7 @@
     {% for goal in goals %}
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <span class="goal-name-display">{{ goal['name'] }}</span>
                     <input type="text" class="form-control form-control-sm goal-name-edit" value="{{ goal['name'] }}"
@@ -31,7 +31,7 @@
             <div class="card-body">
                 <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
                     <div class="mb-2 mb-md-0">
-                        <span class="text-muted small">Target:</span>
+                        <span class="text-body-secondary small">Target:</span>
                         <h4 class="mb-0">
                             <span class="goal-target-display">₹{{ goal['target_amount'] }}</span>
                             <input type="number" step="0.01" min="0.01"
@@ -40,7 +40,7 @@
                         </h4>
                     </div>
                     <div class="text-md-end">
-                        <span class="text-muted small">Current:</span>
+                        <span class="text-body-secondary small">Current:</span>
                         <h4 class="mb-0">
                             <span class="goal-current-display">₹{{ goal['current_amount'] }}</span>
                             <input type="number" step="0.01" min="0"
@@ -56,12 +56,12 @@
                     </div>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted small">Progress</span>
+                    <span class="text-body-secondary small">Progress</span>
                     <span class="fw-bold">{{ ((goal['current_amount'] / goal['target_amount']) * 100)|round(1)
                         }}%</span>
                 </div>
                 <div class="d-flex justify-content-between">
-                    <span class="text-muted small">Target Date</span>
+                    <span class="text-body-secondary small">Target Date</span>
                     <span class="fw-bold">
                         <span class="goal-date-display">{{ goal['target_date'].strftime('%b %d, %Y') }}</span>
                         <input type="date" class="form-control form-control-sm goal-date-edit"
@@ -69,7 +69,7 @@
                     </span>
                 </div>
             </div>
-            <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-end gap-2">
+            <div class="card-footer d-flex flex-column flex-md-row justify-content-end gap-2">
                 <form method="POST" action="{{ url_for('add_funds', goal_id=goal['id']) }}"
                     class="d-flex me-md-2 w-100 w-md-auto">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -92,9 +92,9 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body text-center py-5">
-                <i class="bi bi-bullseye display-1 text-muted mb-3"></i>
+                <i class="bi bi-bullseye display-1 text-body-secondary mb-3"></i>
                 <h4>No Savings Goals Yet</h4>
-                <p class="text-muted">Start by creating your first savings goal</p>
+                <p class="text-body-secondary">Start by creating your first savings goal</p>
                 <a href="/add_goal" class="btn btn-primary">Create Goal</a>
             </div>
         </div>
@@ -177,11 +177,12 @@
                     goalCard.querySelector('.goal-name-display').textContent = name;
                     goalCard.querySelector('.goal-target-display').textContent = '₹' + targetAmount;
                     goalCard.querySelector('.goal-current-display').textContent = '₹' + currentAmount;
-                    const date = new Date(targetDate);
-                    goalCard.querySelector('.goal-date-display').textContent = date.toLocaleDateString('en-US', {
+                    const date = new Date(targetDate + 'T00:00:00');
+                    goalCard.querySelector('.goal-date-display').textContent = date.toLocaleDateString('en-IN', {
                         year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
+                        timeZone: 'Asia/Kolkata'
                     });
                     const progressBar = goalCard.querySelector('.progress-bar');
                     if (progressBar) {
@@ -189,7 +190,7 @@
                         progressBar.style.width = `${progress}%`;
                         progressBar.setAttribute('aria-valuenow', currentAmount);
                     }
-                    const progressText = goalCard.querySelectorAll('.d-flex.justify-content-between.mb-2 span.fw-bold')[0];
+                    const progressText = goalCard.querySelectorAll('.d-flex.justify-content-between span.fw-bold')[0];
                     if (progressText) {
                         progressText.textContent = ((currentAmount / targetAmount) * 100).toFixed(1) + '%';
                     }

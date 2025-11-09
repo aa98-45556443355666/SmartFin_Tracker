@@ -7,7 +7,7 @@
     </a>
 </div>
 <div class="card">
-    <div class="card-header bg-white">
+    <div class="card-header">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
             <h5 class="mb-3 mb-md-0">Transaction History</h5>
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
@@ -147,7 +147,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-body-secondary py-4">
                             No transactions found for
                             {{ datetime(selected_year, selected_month, 1).strftime('%B %Y') }}
                             {% if selected_type != 'all' or search_query %}with current filters{% endif %}
@@ -244,10 +244,12 @@
                         result.transaction.description || 'No description';
                     row.querySelector('.category-display').textContent =
                         result.transaction.category.charAt(0).toUpperCase() + result.transaction.category.slice(1);
-                    row.querySelector('.type-display').textContent =
-                        result.transaction.type.charAt(0).toUpperCase() + result.transaction.type.slice(1);
-                    row.querySelector('.type-display').className =
-                        `badge bg-${result.transaction.type === 'income' ? 'success' : 'danger'} type-display`;
+
+                    const typeDisplay = row.querySelector('.type-display');
+                    typeDisplay.textContent = result.transaction.type.charAt(0).toUpperCase() + result.transaction.type.slice(1);
+                    typeDisplay.style.backgroundColor = result.transaction.type === 'income' ? 'var(--bs-success)' : 'var(--bs-danger)';
+                    typeDisplay.style.color = 'white';
+
                     row.querySelector('.amount-display').textContent =
                         `${result.transaction.type === 'income' ? '+' : '-'}₹${parseFloat(result.transaction.amount).toFixed(2)}`;
                     row.querySelector('.amount-display').className =

@@ -3,7 +3,7 @@
 <div class="row justify-content-center mt-3 mt-md-5">
     <div class="col-md-8 col-lg-6">
         <div class="card">
-            <div class="card-header bg-white">
+            <div class="card-header">
                 <h3 class="text-center">Login to Your Account</h3>
             </div>
             <div class="card-body">
@@ -45,18 +45,21 @@
     .custom-select {
         padding: 0.4rem 0.75rem;
         font-size: 1rem;
-        border: 1px solid #ccc;
+        border: 1px solid var(--bs-border-color); 
         border-radius: 6px;
-        background-color: #fff;
+        background-color: var(--bs-body-bg); 
+        color: var(--bs-body-color); 
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
         cursor: pointer;
-        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23666' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
         background-repeat: no-repeat;
         background-position: right 0.75rem center;
-        background-size: 10px 6px;
-        min-width: 80px;
+        background-size: 16px 12px;
+    }
+    [data-bs-theme="dark"] .custom-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     }
 
     .form-label {
