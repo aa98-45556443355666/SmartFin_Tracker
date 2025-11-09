@@ -17,8 +17,8 @@
                         {{ form.password.label(class="form-label") }}
                         {{ form.password(class="form-control", placeholder="Enter your password") }}
                     </div>
-                    <div class="mb-3 custom-select-container">
-                        {{ form.remember(class="custom-select") }}
+                    <div class="mb-3 remember-me-container">
+                        {{ form.remember(class="form-select form-select-sm") }} 
                         {{ form.remember.label(class="form-label") }}
                     </div>
                     <div class="d-grid">
@@ -35,31 +35,16 @@
 {% endblock %}
 {% block styles %}
 <style>
-    .custom-select-container {
+    .remember-me-container {
         display: flex;
         align-items: center;
         gap: 0.5rem;
         font-size: 1rem;
     }
 
-    .custom-select {
-        padding: 0.4rem 0.75rem;
-        font-size: 1rem;
-        border: 1px solid var(--bs-border-color); 
-        border-radius: 6px;
-        background-color: var(--bs-body-bg); 
-        color: var(--bs-body-color); 
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        cursor: pointer;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right 0.75rem center;
-        background-size: 16px 12px;
-    }
-    [data-bs-theme="dark"] .custom-select {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    .remember-me-container .form-select {
+        width: auto;
+        min-width: 80px;
     }
 
     .form-label {
