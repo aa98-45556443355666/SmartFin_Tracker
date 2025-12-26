@@ -7,46 +7,76 @@
     </a>
 </div>
 <div class="card">
-    <div class="card-header">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-            <h5 class="mb-3 mb-md-0">Transaction History</h5>
-            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
-                <form method="GET" action="{{ url_for('transactions') }}" class="d-flex flex-wrap gap-2">
-                    <div class="d-flex">
-                        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()"
-                            style="width: 180px; padding-right: 30px;">
+    <div class="card-header bg-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <h5 class="mb-0 fw-bold text-primary">
+                <i class="bi bi-clock-history me-2"></i>History
+            </h5>
+
+            <div class="d-flex flex-column flex-xl-row align-items-xl-center gap-2 w-100 justify-content-end">
+
+                <form method="GET" action="{{ url_for('transactions') }}" class="d-flex gap-2">
+                    <div class="input-group input-group-sm shadow-sm">
+                        <span class="input-group-text bg-body-tertiary"><i class="bi bi-calendar3"></i></span>
+                        <select name="month" class="form-select form-select-sm border-secondary-subtle" onchange="this.form.submit()" style="max-width: 130px;">
                             {% for m in range(1, 13) %}
                             <option value="{{ m }}" {% if m==selected_month %}selected{% endif %}>
                                 {{ datetime(2020, m, 1).strftime('%B') }}
                             </option>
                             {% endfor %}
                         </select>
-                        <select name="year" class="form-select form-select-sm ms-2" onchange="this.form.submit()">
+                        <select name="year" class="form-select form-select-sm border-secondary-subtle" onchange="this.form.submit()" style="max-width: 90px;">
                             {% for y in range(datetime.now(IST).year, datetime.now(IST).year - 5, -1) %}
                             <option value="{{ y }}" {% if y==selected_year %}selected{% endif %}>{{ y }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <input type="hidden" name="type" value="{{ selected_type }}">
+                    <input type="hidden" name="category" value="{{ selected_category }}">
                     <input type="hidden" name="search" value="{{ search_query }}">
                 </form>
-                <form method="GET" action="{{ url_for('transactions') }}" class="d-flex flex-wrap gap-2">
+
+                <div class="d-none d-xl-block border-end mx-1" style="height: 20px;"></div>
+
+                <form method="GET" action="{{ url_for('transactions') }}" class="d-flex flex-wrap gap-2 align-items-center">
                     <input type="hidden" name="month" value="{{ selected_month }}">
                     <input type="hidden" name="year" value="{{ selected_year }}">
-                    <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="all" {% if selected_type=='all' %}selected{% endif %}>All Types</option>
-                        <option value="income" {% if selected_type=='income' %}selected{% endif %}>Income</option>
-                        <option value="expense" {% if selected_type=='expense' %}selected{% endif %}>Expense</option>
+
+                    <div class="d-flex align-items-center text-body-secondary small fw-bold me-1">
+                        <i class="bi bi-funnel-fill me-1"></i>Filter:
+                    </div>
+
+                    <select name="category" 
+                            class="form-select form-select-sm shadow-sm {{ 'border-primary bg-primary-subtle text-primary fw-bold' if selected_category != 'all' else 'border-secondary-subtle' }}" 
+                            style="width: auto; min-width: 140px;" 
+                            onchange="this.form.submit()">
+                        <option value="all" class="text-body" {% if selected_category=='all' %}selected{% endif %}>All Categories</option>
+                        {% for cat in ['salary', 'freelance', 'investment', 'other_income',
+                        'housing', 'transportation', 'food', 'utilities',
+                        'healthcare', 'entertainment', 'shopping',
+                        'education', 'other_expense'] %}
+                        <option value="{{ cat }}" class="text-body" {% if selected_category==cat %}selected{% endif %}>{{ cat|replace('_', ' ')|capitalize }}</option>
+                        {% endfor %}
                     </select>
-                    <div class="input-group input-group-sm">
-                        <input type="text" name="search" class="form-control" placeholder="Search..."
+
+                    <select name="type" 
+                            class="form-select form-select-sm shadow-sm {{ 'border-primary bg-primary-subtle text-primary fw-bold' if selected_type != 'all' else 'border-secondary-subtle' }}" 
+                            style="width: auto; min-width: 110px;" 
+                            onchange="this.form.submit()">
+                        <option value="all" class="text-body" {% if selected_type=='all' %}selected{% endif %}>All Types</option>
+                        <option value="income" class="text-body" {% if selected_type=='income' %}selected{% endif %}>Income</option>
+                        <option value="expense" class="text-body" {% if selected_type=='expense' %}selected{% endif %}>Expense</option>
+                    </select>
+
+                    <div class="input-group input-group-sm shadow-sm" style="min-width: 200px;">
+                        <input type="text" name="search" class="form-control border-secondary-subtle" placeholder="Search..."
                             value="{{ search_query }}" aria-label="Search">
                         <button class="btn btn-outline-secondary" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
-                        {% if selected_type != 'all' or search_query %}
+                        {% if selected_type != 'all' or selected_category != 'all' or search_query %}
                         <a href="{{ url_for('transactions', month=selected_month, year=selected_year) }}"
-                            class="btn btn-outline-danger" type="button">
+                            class="btn btn-danger" type="button" title="Clear Filters">
                             <i class="bi bi-x-lg"></i>
                         </a>
                         {% endif %}
@@ -150,7 +180,7 @@
                         <td colspan="6" class="text-center text-body-secondary py-4">
                             No transactions found for
                             {{ datetime(selected_year, selected_month, 1).strftime('%B %Y') }}
-                            {% if selected_type != 'all' or search_query %}with current filters{% endif %}
+                            {% if selected_type != 'all' or selected_category != 'all' or search_query %}with current filters{% endif %}
                         </td>
                     </tr>
                     {% endfor %}

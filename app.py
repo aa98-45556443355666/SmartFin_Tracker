@@ -45,7 +45,7 @@ class User(UserMixin):
 class TransactionForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
     type = SelectField('Type', choices=[
-                       ('income', 'Income'), ('expense', 'Expense')], validators=[DataRequired()])
+                        ('income', 'Income'), ('expense', 'Expense')], validators=[DataRequired()])
     category = SelectField('Category', choices=[
         ('salary', 'Salary'), ('freelance',
                                'Freelance'), ('investment', 'Investment'),
@@ -72,7 +72,7 @@ class LoginForm(FlaskForm):
 
 class SignupForm(FlaskForm):
     name = StringField('Name', validators=[
-                       DataRequired(), Length(min=2, max=100)])
+                        DataRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[
                              DataRequired(), Length(min=6)])
@@ -82,7 +82,7 @@ class SignupForm(FlaskForm):
 
 class GoalForm(FlaskForm):
     name = StringField('Goal Name', validators=[
-                       DataRequired(), Length(min=2, max=100)])
+                        DataRequired(), Length(min=2, max=100)])
     target_amount = FloatField('Target Amount', validators=[DataRequired()])
     current_amount = FloatField('Current Amount', default=0.0)
     target_date = DateField('Target Date', validators=[DataRequired()])
@@ -112,12 +112,12 @@ def dashboard():
         goals = get_goals(conn,user_id)
         income,expenses = get_income_expense_summary(conn,
             user_id, selected_month, selected_year)
-       
+
         expense_categories = get_expense_categories(conn,
             user_id, selected_month, selected_year)
-        
+
     balance = income - expenses
-    
+
     chart_data = {
         'income': income,
         'expenses': expenses,
@@ -132,30 +132,36 @@ def dashboard():
                            goals=goals,
                            chart_data=chart_data,
                            datetime=datetime,
-                          IST=IST)
+                           IST=IST)
 
 
 @app.route('/transactions')
 @login_required
 def transactions():
     transaction_type = request.args.get('type', 'all')
+    category_filter = request.args.get('category', 'all')
     search_query = request.args.get('search', '').strip().lower()
     month_filter = request.args.get('month', datetime.now(IST).month, type=int)
     year_filter = request.args.get('year', datetime.now(IST).year, type=int)
     user_id = current_user.id
 
     with engine.connect() as conn:
-        transactions = get_transactions(conn,user_id, month=month_filter, year=year_filter,
-                                        type_filter=transaction_type if transaction_type != 'all' else None, search=search_query)
-        
+        transactions = get_transactions(conn, user_id, 
+                                        month=month_filter, 
+                                        year=year_filter,
+                                        type_filter=transaction_type if transaction_type != 'all' else None,
+                                        category_filter=category_filter if category_filter != 'all' else None,
+                                        search=search_query)
+
     return render_template('transactions.html',
                            transactions=transactions,
                            selected_type=transaction_type,
+                           selected_category=category_filter, 
                            search_query=search_query,
                            selected_month=month_filter,
                            selected_year=year_filter,
                            datetime=datetime,
-                          IST=IST)
+                           IST=IST)
 
 
 @app.route('/login', methods=['GET', 'POST'])

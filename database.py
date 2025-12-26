@@ -52,10 +52,10 @@ def get_user_by_id(user_id):
         row = res.fetchone()
         return row._asdict() if row else None
 
-
-def get_transactions(conn, user_id, month=None, year=None, type_filter=None, search=None, limit=None):
+def get_transactions(conn, user_id, month=None, year=None, type_filter=None, category_filter=None, search=None, limit=None):
     query = "SELECT * FROM transactions WHERE user_id = :user_id"
     params = {"user_id": user_id}
+
     if month:
         query += " AND MONTH(date) = :month"
         params["month"] = month
@@ -65,15 +65,20 @@ def get_transactions(conn, user_id, month=None, year=None, type_filter=None, sea
     if type_filter in ['income', 'expense']:
         query += " AND type = :type"
         params["type"] = type_filter
+    if category_filter:
+        query += " AND category = :category"
+        params["category"] = category_filter
     if search:
         query += " AND (LOWER(description) LIKE :search OR LOWER(category) LIKE :search)"
         params["search"] = f"%{search.lower()}%"
+
     query += " ORDER BY date DESC"
+
     if limit:
         query += " LIMIT :limit"
         params["limit"] = limit
-    
-    res = _execute_query(conn,query, params)
+
+    res = _execute_query(conn, query, params)
     return [row._asdict() for row in res.fetchall()]
 
 
@@ -125,7 +130,7 @@ def delete_transaction(transaction_id, user_id):
 
 
 def get_goals(conn,user_id):
-   
+
     res = _execute_query(conn,
             "SELECT * FROM goals WHERE user_id = :user_id", {"user_id": user_id})
     return [row._asdict() for row in res.fetchall()]
@@ -205,7 +210,7 @@ def get_goal_by_id(goal_id, user_id):
 def get_transaction_by_id(transaction_id, user_id):
     with engine.connect() as conn:
         res = conn.execute(text("SELECT * FROM transactions WHERE id = :id AND user_id = :user_id"),
-                           {"id": transaction_id, "user_id": user_id})
+                            {"id": transaction_id, "user_id": user_id})
         row = res.fetchone()
         return row._asdict() if row else None
 
