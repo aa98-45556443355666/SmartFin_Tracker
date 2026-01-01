@@ -15,7 +15,7 @@
                 </select>
                 <select name="year" class="form-select form-select-sm" style="width: 90px;"
                     onchange="this.form.submit()">
-                    {% for y in range(datetime.now(IST).year, datetime.now(IST).year - 5, -1) %}
+                    {% for y in range(datetime.now(IST).year, datetime.now(IST).year - 15, -1) %}
                     <option value="{{ y }}" {% if y==chart_data.selected_year %}selected{% endif %}>{{ y }}</option>
                     {% endfor %}
                 </select>
