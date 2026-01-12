@@ -1,31 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 mt-4">
-    <h2 class="mb-3 mb-md-0">All Transactions</h2>
-    <a href="/add_transaction" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i> Add Transaction
+    <h2 class="mb-3 mb-md-0 fw-bold text-primary">All Transactions</h2>
+    <a href="/add_transaction" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> Add Transaction
     </a>
 </div>
-<div class="card">
-    <div class="card-header bg-body">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-            <h5 class="mb-0 fw-bold text-primary">
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent border-bottom py-3">
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3">
+            <h5 class="mb-0 fw-bold text-body-secondary">
                 <i class="bi bi-clock-history me-2"></i>History
             </h5>
 
-            <div class="d-flex flex-column flex-xl-row align-items-xl-center gap-2 w-100 justify-content-end">
+            <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 justify-content-end">
 
-                <form method="GET" action="{{ url_for('transactions') }}" class="d-flex gap-2">
-                    <div class="input-group input-group-sm shadow-sm">
-                        <span class="input-group-text bg-body-tertiary"><i class="bi bi-calendar3"></i></span>
-                        <select name="month" class="form-select form-select-sm border-secondary-subtle" onchange="this.form.submit()" style="max-width: 130px;">
+                <form method="GET" action="{{ url_for('transactions') }}" class="d-flex">
+                    <div class="d-flex shadow-sm rounded">
+                        <select name="month" class="form-select form-select-sm border-secondary-subtle" onchange="this.form.submit()" style="width: 130px;">
                             {% for m in range(1, 13) %}
                             <option value="{{ m }}" {% if m==selected_month %}selected{% endif %}>
                                 {{ datetime(2020, m, 1).strftime('%B') }}
                             </option>
                             {% endfor %}
                         </select>
-                        <select name="year" class="form-select form-select-sm border-secondary-subtle" onchange="this.form.submit()" style="max-width: 90px;">
+                        <select name="year" class="form-select form-select-sm border-secondary-subtle border-start-0" onchange="this.form.submit()" style="width: 90px;">
                             {% for y in range(datetime.now(IST).year, datetime.now(IST).year - 15, -1) %}
                             <option value="{{ y }}" {% if y==selected_year %}selected{% endif %}>{{ y }}</option>
                             {% endfor %}
@@ -85,36 +85,37 @@
             </div>
         </div>
     </div>
-    <div class="alert alert-info mb-3">
-        Showing transactions for
-        <strong>{{ datetime(selected_year, selected_month, 1).strftime('%B %Y') }}</strong>
-    </div>
+
     <div class="card-body">
+        <div class="alert alert-light border-start border-4 border-info shadow-sm mb-4">
+            <i class="bi bi-calendar-event me-2 text-info"></i>Showing transactions for 
+            <strong>{{ datetime(selected_year, selected_month, 1).strftime('%B %Y') }}</strong>
+        </div>
+
         <div class="table-responsive">
-            <table class="table table-hover" id="transactionsTable">
-                <thead>
+            <table class="table table-hover align-middle" id="transactionsTable">
+                <thead class="table-light">
                     <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Category</th>
-                        <th>Type</th>
-                        <th class="text-end">Amount</th>
-                        <th>Actions</th>
+                        <th class="border-0 text-secondary text-uppercase small fw-bold">Date</th>
+                        <th class="border-0 text-secondary text-uppercase small fw-bold">Description</th>
+                        <th class="border-0 text-secondary text-uppercase small fw-bold">Category</th>
+                        <th class="border-0 text-secondary text-uppercase small fw-bold">Type</th>
+                        <th class="border-0 text-secondary text-uppercase small fw-bold text-end">Amount</th>
+                        <th class="border-0 text-secondary text-uppercase small fw-bold">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="border-top-0">
                     {% for transaction in transactions %}
                     <tr data-transaction-id="{{ transaction['id'] }}">
                         <td>
                             <input type="date" class="form-control form-control-sm date-input"
                                 value="{{ transaction['date'].strftime('%Y-%m-%d') }}" style="display: none;">
-                            <span class="date-display">{{ transaction['date'].strftime('%b %d, %Y') }}</span>
+                            <span class="date-display fw-semibold">{{ transaction['date'].strftime('%b %d, %Y') }}</span>
                         </td>
                         <td>
                             <input type="text" class="form-control form-control-sm description-input"
                                 value="{{ transaction['description'] or '' }}" style="display: none;">
-                            <span class="description-display">{{ transaction['description'] or 'No description'
-                                }}</span>
+                            <span class="description-display text-body-secondary">{{ transaction['description'] or 'No description' }}</span>
                         </td>
                         <td>
                             <select class="form-select form-select-sm category-input" style="display: none;">
@@ -127,7 +128,9 @@
                                 </option>
                                 {% endfor %}
                             </select>
-                            <span class="category-display">{{ transaction['category']|capitalize }}</span>
+                            <span class="category-display badge bg-secondary-subtle text-secondary-emphasis rounded-pill fw-normal px-3">
+                                {{ transaction['category']|capitalize }}
+                            </span>
                         </td>
                         <td style="min-width: 110px;">
                             <select class="form-select form-select-sm type-input" style="display: none; 
@@ -141,29 +144,29 @@
                                     Expense
                                 </option>
                             </select>
-                            <span class="badge type-display d-inline-flex align-items-center justify-content-center"
-                                style="width: 110px; 
-                                         height: 28px;
-                                         padding: 0.25rem 0.5rem;
-                                         background-color: {{ 'var(--bs-success)' if transaction['type'] == 'income' else 'var(--bs-danger)' }};
-                                         color: white;">
-                                {{ transaction['type']|capitalize }}
-                            </span>
+                            <div class="type-display d-flex align-items-center">
+                                <div class="rounded-circle p-1 d-flex align-items-center justify-content-center me-2" 
+                                     style="width: 24px; height: 24px; background-color: {{ 'rgba(25, 135, 84, 0.1)' if transaction['type'] == 'income' else 'rgba(220, 53, 69, 0.1)' }}">
+                                    <i class="bi {{ 'bi-arrow-down-left text-success' if transaction['type'] == 'income' else 'bi-arrow-up-right text-danger' }}" style="font-size: 0.75rem;"></i>
+                                </div>
+                                <span class="{{ 'text-success' if transaction['type'] == 'income' else 'text-danger' }} fw-semibold small">
+                                    {{ transaction['type']|capitalize }}
+                                </span>
+                            </div>
                         </td>
                         <td class="text-end">
                             <input type="number" step="0.01" class="form-control form-control-sm amount-input"
                                 value="{{ transaction['amount'] }}" style="display: none;">
-                            <span
-                                class="amount-display {{ 'text-success' if transaction['type'] == 'income' else 'text-danger' }}">
+                            <span class="amount-display fw-bold {{ 'text-success' if transaction['type'] == 'income' else 'text-danger' }}">
                                 {{ '+' if transaction['type'] == 'income' else '-' }}₹{{ transaction['amount'] }}
                             </span>
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary edit-btn">
+                                <button class="btn btn-outline-primary edit-btn border-0">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-outline-danger delete-btn">
+                                <button class="btn btn-outline-danger delete-btn border-0">
                                     <i class="bi bi-trash"></i>
                                 </button>
                                 <button class="btn btn-outline-success save-btn" style="display: none;">
@@ -177,7 +180,8 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center text-body-secondary py-4">
+                        <td colspan="6" class="text-center text-body-secondary py-5">
+                            <i class="bi bi-receipt display-6 d-block mb-3"></i>
                             No transactions found for
                             {{ datetime(selected_year, selected_month, 1).strftime('%B %Y') }}
                             {% if selected_type != 'all' or selected_category != 'all' or search_query %}with current filters{% endif %}
@@ -229,9 +233,14 @@
                 cancelBtn.style.display = 'block';
             } else {
                 inputs.forEach(input => input.style.display = 'none');
-                displays.forEach(display => display.style.display = 'block');
-                editBtn.style.display = 'block';
-                deleteBtn.style.display = 'block';
+                displays.forEach(display => display.style.display = 'flex'); 
+                row.querySelector('.date-display').style.display = 'block';
+                row.querySelector('.description-display').style.display = 'block';
+                row.querySelector('.category-display').style.display = 'inline-block';
+                row.querySelector('.amount-display').style.display = 'block';
+
+                editBtn.style.display = 'inline-block';
+                deleteBtn.style.display = 'inline-block';
                 saveBtn.style.display = 'none';
                 cancelBtn.style.display = 'none';
             }
@@ -276,14 +285,20 @@
                         result.transaction.category.charAt(0).toUpperCase() + result.transaction.category.slice(1);
 
                     const typeDisplay = row.querySelector('.type-display');
-                    typeDisplay.textContent = result.transaction.type.charAt(0).toUpperCase() + result.transaction.type.slice(1);
-                    typeDisplay.style.backgroundColor = result.transaction.type === 'income' ? 'var(--bs-success)' : 'var(--bs-danger)';
-                    typeDisplay.style.color = 'white';
-
+                    const isIncome = result.transaction.type === 'income';
+                    typeDisplay.innerHTML = `
+                        <div class="rounded-circle p-1 d-flex align-items-center justify-content-center me-2" 
+                             style="width: 24px; height: 24px; background-color: ${isIncome ? 'rgba(25, 135, 84, 0.1)' : 'rgba(220, 53, 69, 0.1)'}">
+                            <i class="bi ${isIncome ? 'bi-arrow-down-left text-success' : 'bi-arrow-up-right text-danger'}" style="font-size: 0.75rem;"></i>
+                        </div>
+                        <span class="${isIncome ? 'text-success' : 'text-danger'} fw-semibold small">
+                            ${result.transaction.type.charAt(0).toUpperCase() + result.transaction.type.slice(1)}
+                        </span>
+                    `;
                     row.querySelector('.amount-display').textContent =
                         `${result.transaction.type === 'income' ? '+' : '-'}₹${parseFloat(result.transaction.amount).toFixed(2)}`;
                     row.querySelector('.amount-display').className =
-                        `amount-display text-${result.transaction.type === 'income' ? 'success' : 'danger'}`;
+                        `amount-display fw-bold text-${result.transaction.type === 'income' ? 'success' : 'danger'}`;
                     row.querySelector('.date-display').textContent = result.transaction.display_date;
                     toggleEditMode(row, false);
                     showAlert('Transaction updated successfully', 'success');
@@ -412,11 +427,6 @@
         .table th,
         .table td {
             padding: 0.5rem;
-        }
-
-        .badge.type-display {
-            width: 80px;
-            font-size: 0.75rem;
         }
     }
 </style>
